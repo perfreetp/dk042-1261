@@ -81,11 +81,10 @@ const ProfilePage: React.FC = () => {
 
     if (Object.keys(errors).length > 0) {
       setProfileErrors(errors);
-      return;
+      return false;
     }
 
     updateRentalProfile(profileForm as RentalProfile);
-    setEditProfileVisible(false);
   };
 
   const openAddRoommate = () => {
@@ -119,7 +118,7 @@ const ProfilePage: React.FC = () => {
 
     if (Object.keys(errors).length > 0) {
       setRoommateErrors(errors);
-      return;
+      return false;
     }
 
     if (editingRoommate) {
@@ -127,7 +126,6 @@ const ProfilePage: React.FC = () => {
     } else {
       addRoommate(roommateForm);
     }
-    setEditRoommateVisible(false);
   };
 
   const handleRemoveRoommate = async (id: string) => {

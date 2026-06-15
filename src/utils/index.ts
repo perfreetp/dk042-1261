@@ -33,6 +33,63 @@ export const calculateShareAmount = (
   return Number((totalAmount * shareRatio).toFixed(2));
 };
 
+export interface RoommateShare {
+  roommateId: string;
+  roommateName: string;
+  shareRatio: number;
+  shareAmount: number;
+}
+
+export const calculateInvolvedShareAmounts = (
+  totalAmount: number,
+  allRoommates: { id: string; name: string; shareRatio: number }[],
+  involvedIds: string[]
+): RoommateShare[] => {
+  const involved = allRoommates.filter((r) => involvedIds.length === 0 || involvedIds.includes(r.id));
+
+  if (involved.length === 0) {
+    return allRoommates.map((r) => ({
+      roommateId: r.id,
+      roommateName: r.name,
+      shareRatio: r.shareRatio,
+      shareAmount: 0
+    }));
+  }
+
+  if (involvedIds.length === 0) {
+    return allRoommates.map((r) => ({
+      roommateId: r.id,
+      roommateName: r.name,
+      shareRatio: r.shareRatio,
+      shareAmount: calculateShareAmount(totalAmount, r.shareRatio)
+    }));
+  }
+
+  const totalInvolvedRatio = involved.reduce((sum, r) => sum + r.shareRatio, 0);
+  const shareMap: Record<string, RoommateShare> = {};
+
+  let allocated = 0;
+  involved.forEach((r, idx) => {
+    const amount = idx === involved.length - 1
+      ? Number((totalAmount - allocated).toFixed(2))
+      : Number((totalAmount * (r.shareRatio / totalInvolvedRatio)).toFixed(2));
+    allocated += amount;
+    shareMap[r.id] = {
+      roommateId: r.id,
+      roommateName: r.name,
+      shareRatio: r.shareRatio,
+      shareAmount: amount
+    };
+  });
+
+  return allRoommates.map((r) => shareMap[r.id] || {
+    roommateId: r.id,
+    roommateName: r.name,
+    shareRatio: r.shareRatio,
+    shareAmount: 0
+  });
+};
+
 export const validateShareRatios = (ratios: number[]): boolean => {
   const total = ratios.reduce((sum, r) => sum + r, 0);
   return Math.abs(total - 1) < 0.001;

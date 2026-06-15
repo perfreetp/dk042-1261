@@ -60,13 +60,15 @@ interface FormTextareaProps {
   onChange: (value: string) => void;
   placeholder?: string;
   maxLength?: number;
+  onBlur?: () => void;
 }
 
 export const FormTextarea: React.FC<FormTextareaProps> = ({
   value,
   onChange,
   placeholder,
-  maxLength
+  maxLength,
+  onBlur
 }) => {
   return (
     <Textarea
@@ -75,6 +77,7 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
       onInput={(e) => onChange(e.detail.value)}
       placeholder={placeholder}
       maxlength={maxLength}
+      onBlur={onBlur}
     />
   );
 };

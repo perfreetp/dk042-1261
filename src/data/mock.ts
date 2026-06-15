@@ -248,7 +248,22 @@ export const mockIssues: Issue[] = [
     resolvedAt: '2025-06-06T09:00:00',
     resolution: '小刚已清洗并道歉，承诺以后注意。',
     attachments: [],
-    involvedParties: ['小刚', '小红']
+    involvedParties: ['小刚', '小红'],
+    progressLogs: [
+      {
+        id: 'log_001',
+        content: '已经私聊提醒对方，但没有回复。',
+        author: '小红',
+        createdAt: '2025-06-05T21:00:00'
+      },
+      {
+        id: 'log_002',
+        content: '对方已道歉并清洗干净，厨房已恢复整洁。',
+        author: '小红',
+        createdAt: '2025-06-06T09:00:00'
+      }
+    ],
+    internalNote: '后续约定：餐具放置超过24小时可由他人代洗，收费20元/次。'
   },
   {
     id: 'issue_002',
@@ -259,7 +274,15 @@ export const mockIssues: Issue[] = [
     reportedBy: '小刚',
     reportedAt: '2025-06-12T08:00:00',
     attachments: [],
-    involvedParties: ['小明', '小刚']
+    involvedParties: ['小明', '小刚'],
+    progressLogs: [
+      {
+        id: 'log_003',
+        content: '先当面沟通，观察今晚情况。',
+        author: '小刚',
+        createdAt: '2025-06-12T09:00:00'
+      }
+    ]
   },
   {
     id: 'issue_003',
@@ -270,7 +293,9 @@ export const mockIssues: Issue[] = [
     reportedBy: '小明',
     reportedAt: '2025-06-15T19:00:00',
     attachments: [],
-    involvedParties: ['小红', '小明', '小刚']
+    involvedParties: ['小红', '小明', '小刚'],
+    progressLogs: [],
+    internalNote: '需要三方开会讨论留宿规则，建议提前3天告知，连续住宿不超过5天。'
   },
   {
     id: 'issue_004',
@@ -281,7 +306,8 @@ export const mockIssues: Issue[] = [
     reportedBy: '小刚',
     reportedAt: '2025-06-10T14:30:00',
     attachments: [],
-    involvedParties: ['小明', '小红', '小刚']
+    involvedParties: ['小明', '小红', '小刚'],
+    progressLogs: []
   }
 ];
 

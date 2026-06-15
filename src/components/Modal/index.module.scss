@@ -91,3 +91,8 @@
   background: linear-gradient(135deg, $color-error 0%, #FF6B6B 100%);
   color: $color-text-white;
 }
+
+.btnDisabled {
+  opacity: 0.6;
+  pointer-events: none;
+}

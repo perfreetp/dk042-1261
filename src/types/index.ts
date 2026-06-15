@@ -38,6 +38,7 @@ export interface Bill {
   payerId?: string;
   note?: string;
   createdAt: string;
+  involvedRoommateIds?: string[];
 }
 
 export interface BillShareDetail {
@@ -77,6 +78,39 @@ export interface HouseRule {
 export type IssueCategory = 'hygiene' | 'noise' | 'visitor' | 'pet' | 'rent' | 'bill' | 'other';
 export type IssueStatus = 'pending' | 'resolved' | 'escalated';
 
+export const ISSUE_CATEGORY_LABEL: Record<IssueCategory, string> = {
+  hygiene: '卫生问题',
+  noise: '噪音扰民',
+  visitor: '访客留宿',
+  pet: '宠物问题',
+  bill: '费用分摊',
+  rent: '房租押金',
+  other: '其他争议'
+};
+
+export const ISSUE_CATEGORY_COLOR: Record<IssueCategory, string> = {
+  hygiene: '#20C997',
+  noise: '#FF9F43',
+  visitor: '#165DFF',
+  pet: '#722ED1',
+  bill: '#F53F3F',
+  rent: '#FF7D00',
+  other: '#86909C'
+};
+
+export const ISSUE_STATUS_LABEL: Record<IssueStatus, string> = {
+  pending: '待处理',
+  resolved: '已解决',
+  escalated: '需介入'
+};
+
+export interface ProgressLog {
+  id: string;
+  content: string;
+  author: string;
+  createdAt: string;
+}
+
 export interface Issue {
   id: string;
   category: IssueCategory;
@@ -89,6 +123,8 @@ export interface Issue {
   resolution?: string;
   attachments: string[];
   involvedParties: string[];
+  progressLogs: ProgressLog[];
+  internalNote?: string;
 }
 
 export type DeductionType = 'damage' | 'cleaning' | 'unpaid_bill' | 'repair' | 'other';
@@ -109,7 +145,24 @@ export interface RoommateConfirmation {
   roommateName: string;
   confirmed: boolean;
   confirmedAt?: string;
+  confirmContent?: string;
 }
+
+export const DEDUCTION_TYPE_LABEL: Record<DeductionType, string> = {
+  damage: '物品损坏',
+  cleaning: '清洁费',
+  unpaid_bill: '未缴账单',
+  repair: '维修费用',
+  other: '其他扣款'
+};
+
+export const DEDUCTION_TYPE_COLOR: Record<DeductionType, string> = {
+  damage: '#F53F3F',
+  cleaning: '#722ED1',
+  unpaid_bill: '#FF7D00',
+  repair: '#FF9F43',
+  other: '#86909C'
+};
 
 export interface CheckoutRecord {
   id: string;
@@ -140,36 +193,3 @@ export const BILL_TYPE_COLOR: Record<BillType, string> = {
   other: '#86909C'
 };
 
-export const ISSUE_CATEGORY_LABEL: Record<IssueCategory, string> = {
-  hygiene: '卫生',
-  noise: '噪音',
-  visitor: '访客',
-  pet: '宠物',
-  rent: '房租',
-  bill: '费用',
-  other: '其他'
-};
-
-export const ISSUE_CATEGORY_COLOR: Record<IssueCategory, string> = {
-  hygiene: '#20C997',
-  noise: '#F53F3F',
-  visitor: '#722ED1',
-  pet: '#FF9F43',
-  rent: '#165DFF',
-  bill: '#FF7D00',
-  other: '#86909C'
-};
-
-export const ISSUE_STATUS_LABEL: Record<IssueStatus, string> = {
-  pending: '待处理',
-  resolved: '已解决',
-  escalated: '需介入'
-};
-
-export const DEDUCTION_TYPE_LABEL: Record<DeductionType, string> = {
-  damage: '物品损坏',
-  cleaning: '清洁费用',
-  unpaid_bill: '未缴费用',
-  repair: '维修费用',
-  other: '其他扣款'
-};

@@ -10,7 +10,8 @@ import type {
   CheckoutRecord,
   Roommate,
   DeductionItem,
-  RoommateConfirmation
+  RoommateConfirmation,
+  ProgressLog
 } from '@/types';
 import {
   mockRentalProfile,
@@ -92,6 +93,7 @@ interface AppState {
   addIssue: (issue: Omit<Issue, 'id' | 'reportedAt' | 'attachments'> & { attachments?: string[] }) => void;
   updateIssue: (id: string, updates: Partial<Issue>) => void;
   resolveIssue: (id: string, resolution: string) => void;
+  addProgressLog: (issueId: string, log: Omit<ProgressLog, 'id' | 'createdAt'>) => void;
 
   updateCheckoutRecord: (updates: Partial<CheckoutRecord>) => void;
   addDeduction: (deduction: Omit<DeductionItem, 'id'>) => void;
@@ -99,6 +101,7 @@ interface AppState {
   removeDeduction: (id: string) => void;
   initiateCheckoutConfirm: () => void;
   confirmRoommate: (roommateId: string) => void;
+  updateRoommateConfirmation: (roommateId: string, updates: Partial<RoommateConfirmation>) => void;
   completeCheckout: () => void;
 }
 
@@ -255,7 +258,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           ...issue,
           id: generateId(),
           reportedAt: new Date().toISOString(),
-          attachments: issue.attachments || []
+          attachments: issue.attachments || [],
+          progressLogs: []
         },
         ...state.issues
       ]
@@ -277,6 +281,22 @@ export const useAppStore = create<AppState>((set, get) => ({
               status: 'resolved',
               resolution,
               resolvedAt: new Date().toISOString()
+            }
+          : i
+      )
+    }));
+    persistData(getPersistableState(get()));
+  },
+  addProgressLog: (issueId, log) => {
+    set((state) => ({
+      issues: state.issues.map((i) =>
+        i.id === issueId
+          ? {
+              ...i,
+              progressLogs: [
+                ...i.progressLogs,
+                { ...log, id: generateId(), createdAt: new Date().toISOString() }
+              ]
             }
           : i
       )
@@ -341,6 +361,22 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newConfirmations = state.checkoutRecord.confirmations.map((c) =>
         c.roommateId === roommateId
           ? { ...c, confirmed: true, confirmedAt: new Date().toISOString() }
+          : c
+      );
+      return {
+        checkoutRecord: {
+          ...state.checkoutRecord,
+          confirmations: newConfirmations
+        }
+      };
+    });
+    persistData(getPersistableState(get()));
+  },
+  updateRoommateConfirmation: (roommateId, updates) => {
+    set((state) => {
+      const newConfirmations = state.checkoutRecord.confirmations.map((c) =>
+        c.roommateId === roommateId
+          ? { ...c, ...updates }
           : c
       );
       return {

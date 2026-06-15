@@ -483,3 +483,419 @@
     opacity: 0.8;
   }
 }
+
+// 用户视角切换
+.userSwitchCard {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin: -$spacing-sm $spacing-lg $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+.userSwitchLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+}
+
+.userSwitchSelect {
+  flex: 1;
+  min-width: 0;
+}
+
+.pendingBadge {
+  padding: 6rpx 16rpx;
+  background-color: $color-warning-bg;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.pendingBadgeText {
+  font-size: $font-size-xs;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+// 我的待确认
+.myTodoCard {
+  background: linear-gradient(135deg, rgba(114, 46, 209, 0.08) 0%, rgba(146, 84, 222, 0.05) 100%);
+  border: 1rpx solid rgba(114, 46, 209, 0.2);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.myTodoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.myTodoTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: #722ED1;
+}
+
+.myTodoCount {
+  font-size: $font-size-xs;
+  color: #9254DE;
+  background-color: rgba(114, 46, 209, 0.1);
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+}
+
+.myTodoList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.myTodoEmpty {
+  font-size: $font-size-sm;
+  color: $color-text-disabled;
+  text-align: center;
+  padding: $spacing-md;
+}
+
+.myTodoItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.myTodoDot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: $radius-round;
+  flex-shrink: 0;
+}
+
+.myTodoContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.myTodoItemTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.myTodoItemDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
+.myTodoItemAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+  flex-shrink: 0;
+}
+
+.confirmAllBtn {
+  width: 100%;
+  text-align: center;
+  line-height: $button-height-lg;
+  display: block;
+}
+
+// 我已确认
+.myDoneCard {
+  background-color: $color-success-bg;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  border: 1rpx solid rgba(0, 180, 42, 0.2);
+}
+
+.myDoneTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-success;
+  margin-bottom: $spacing-xs;
+}
+
+.myDoneTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+}
+
+.myDoneContentBox {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.myDoneContentLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 8rpx;
+}
+
+.myDoneContent {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+// 扣款类型标签
+.deductionTypeTag {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-xs;
+  display: inline-flex;
+}
+
+.deductionTypeTagText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+// 室友确认项
+.confirmItemActive {
+  background-color: rgba(114, 46, 209, 0.05);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.confirmAvatarActive {
+  box-shadow: 0 0 0 4rpx rgba(114, 46, 209, 0.3);
+}
+
+.confirmNameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.currentUserTag {
+  font-size: $font-size-xs;
+  color: #722ED1;
+  background-color: rgba(114, 46, 209, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.confirmContentBox {
+  margin-top: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-sm;
+  border-left: 4rpx solid #722ED1;
+}
+
+.confirmContentText {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  font-style: italic;
+}
+
+// 单个确认弹窗内容
+.confirmListBox {
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  max-height: 350rpx;
+  overflow-y: auto;
+}
+
+.confirmListItem {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.confirmListIndex {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  background-color: rgba(114, 46, 209, 0.15);
+  color: #722ED1;
+  font-size: $font-size-xs;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: $font-weight-semibold;
+}
+
+.confirmListTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.confirmListDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
+.confirmListDispute {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-warning;
+  margin-top: 8rpx;
+}
+
+.confirmListAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+  flex-shrink: 0;
+}
+
+.confirmSummary {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: $spacing-sm 0 $spacing-md;
+  border-top: 2rpx dashed $color-divider;
+  margin-bottom: $spacing-md;
+}
+
+.confirmSummaryLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.confirmSummaryAmount {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+  margin-left: $spacing-xs;
+}
+
+// 扣款详情弹窗
+.detailCard {
+  padding: $spacing-xs 0;
+}
+
+.detailTypeBadge {
+  display: inline-flex;
+  padding: 8rpx 20rpx;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-md;
+}
+
+.detailTypeText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.detailTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.detailAmount {
+  font-size: 44rpx;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+  margin-bottom: $spacing-lg;
+}
+
+.detailDescBox {
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.detailDescLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 8rpx;
+}
+
+.detailDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.detailDisputeBox {
+  background-color: $color-warning-bg;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  border-left: 6rpx solid $color-warning;
+}
+
+.detailDisputeLabel {
+  font-size: $font-size-xs;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+  margin-bottom: 8rpx;
+}
+
+.detailDispute {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.detailConfirmBox {
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 1rpx solid $color-border;
+}
+
+.detailConfirmLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.detailConfirmRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xs 0;
+}
+
+.detailConfirmName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.detailConfirmStatus {
+  font-size: $font-size-xs;
+  color: $color-text-disabled;
+}
+
+.detailConfirmed {
+  color: $color-success;
+  font-weight: $font-weight-medium;
+}

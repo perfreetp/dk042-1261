@@ -447,3 +447,258 @@
   width: 100%;
   height: 100%;
 }
+
+// 处理进度徽章
+.progressBadge {
+  margin-top: $spacing-md;
+  padding: 12rpx $spacing-md;
+  background-color: $color-primary-bg;
+  border-radius: $radius-sm;
+}
+
+.progressBadgeText {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+// 详情弹窗
+.detailScroll {
+  max-height: 90vh;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.detailCategory {
+  display: inline-flex;
+  align-items: center;
+  padding: 6rpx 20rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-text-white;
+}
+
+.detailStatus {
+  display: inline-flex;
+  align-items: center;
+  padding: 6rpx 20rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.detailTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.detailMetaText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.detailSection {
+  margin-bottom: $spacing-lg;
+}
+
+.detailSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.detailSectionTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.previewAllBtn {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.detailDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+  padding: $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+}
+
+.detailEmptyText {
+  font-size: $font-size-xs;
+  color: $color-text-disabled;
+  padding: $spacing-md;
+  text-align: center;
+}
+
+.involvedRowDetail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.personTagBig {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 24rpx;
+  border-radius: $radius-button;
+  background-color: $color-primary-bg;
+  color: $color-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.detailAttachmentRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.detailAttachmentItem {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-sm;
+  overflow: hidden;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.detailAttachmentImage {
+  width: 100%;
+  height: 100%;
+}
+
+.detailResolutionBox {
+  background-color: $color-success-bg;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border-left: 6rpx solid $color-success;
+}
+
+.detailResolutionText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.detailResolutionTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+  display: block;
+}
+
+// 处理进度时间轴
+.progressList {
+  position: relative;
+  padding-left: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.progressItem {
+  position: relative;
+  padding-bottom: $spacing-md;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.progressDot {
+  position: absolute;
+  left: -26rpx;
+  top: 6rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  background-color: $color-primary;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 16rpx;
+    left: 6rpx;
+    width: 2rpx;
+    height: calc(100% - 16rpx);
+    background-color: $color-divider;
+  }
+}
+
+.progressContent {
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.progressText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+}
+
+.progressMeta {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.addProgressArea {
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.addProgressBtn {
+  width: 100%;
+  margin-top: $spacing-sm;
+  text-align: center;
+  display: block;
+  line-height: $button-height-sm;
+}
+
+.noteHint {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.detailFooter {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-xl;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.detailFooterBtn {
+  flex: 1;
+  text-align: center;
+  line-height: $button-height-sm;
+}

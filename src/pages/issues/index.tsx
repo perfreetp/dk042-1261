@@ -23,7 +23,8 @@ const emptyIssue: Omit<Issue, 'id' | 'reportedAt' | 'attachments'> = {
   description: '',
   status: 'pending',
   reportedBy: '',
-  involvedParties: []
+  involvedParties: [],
+  progressLogs: []
 };
 
 const categoryOptions = Object.entries(ISSUE_CATEGORY_LABEL).map(([value, label]) => ({
@@ -50,21 +51,26 @@ const categoryFilters: { key: IssueCategory | 'all'; label: string }[] = [
 ];
 
 const IssuesPage: React.FC = () => {
-  const { issues, rentalProfile, addIssue, updateIssue, resolveIssue } = useAppStore();
+  const { issues, rentalProfile, addIssue, resolveIssue, addProgressLog, updateIssue } = useAppStore();
   const { roommates } = rentalProfile;
 
   const [filterCategory, setFilterCategory] = useState<IssueCategory | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<IssueStatus | 'all'>('all');
+
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [resolveModalVisible, setResolveModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [previewCurrent, setPreviewCurrent] = useState(0);
+
   const [issueForm, setIssueForm] = useState<Omit<Issue, 'id' | 'reportedAt' | 'attachments'>>(emptyIssue);
   const [issueErrors, setIssueErrors] = useState<Record<string, string>>({});
   const [resolutionText, setResolutionText] = useState('');
-  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<string[]>([]);
+
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [newLogContent, setNewLogContent] = useState('');
+  const [logAuthor, setLogAuthor] = useState(roommates[0]?.name || '');
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
   const stats = useMemo(() => ({
     pending: issues.filter((i) => i.status === 'pending').length,
@@ -103,8 +109,15 @@ const IssuesPage: React.FC = () => {
     setAddModalVisible(true);
   };
 
+  const openDetail = (issue: Issue) => {
+    setSelectedIssue(issue);
+    setNewLogContent('');
+    setLogAuthor(roommates[0]?.name || '');
+    setDetailModalVisible(true);
+  };
+
   const openResolveIssue = (issueId: string) => {
-    setSelectedIssueId(issueId);
+    setSelectedIssue(issues.find((i) => i.id === issueId) || null);
     setResolutionText('');
     setResolveModalVisible(true);
   };
@@ -118,25 +131,24 @@ const IssuesPage: React.FC = () => {
 
     if (Object.keys(errors).length > 0) {
       setIssueErrors(errors);
-      return;
+      return false;
     }
 
     addIssue({
       ...issueForm,
       attachments: attachments
     });
-    setAddModalVisible(false);
   };
 
   const confirmResolve = () => {
     if (!resolutionText.trim()) {
       Taro.showToast({ title: '请输入解决方案', icon: 'none' });
-      return;
+      return false;
     }
-    if (selectedIssueId) {
-      resolveIssue(selectedIssueId, resolutionText);
+    if (selectedIssue) {
+      resolveIssue(selectedIssue.id, resolutionText);
+      setSelectedIssue({ ...selectedIssue, status: 'resolved', resolution: resolutionText });
     }
-    setResolveModalVisible(false);
   };
 
   const handleChooseImage = async () => {
@@ -147,7 +159,7 @@ const IssuesPage: React.FC = () => {
         sourceType: ['album', 'camera']
       });
       setAttachments([...attachments, ...res.tempFilePaths]);
-    } catch (e) {
+    } catch (_e) {
       console.log('用户取消选择图片');
     }
   };
@@ -158,14 +170,38 @@ const IssuesPage: React.FC = () => {
     setAttachments(newAttachments);
   };
 
-  const handlePreviewImage = (urls: string[], current: number) => {
+  const handlePreviewImage = (urls: string[]) => {
+    if (urls.length === 0) return;
     setPreviewUrls(urls);
-    setPreviewCurrent(current);
     setPreviewVisible(true);
   };
 
-  const handleClosePreview = () => {
-    setPreviewVisible(false);
+  const handleAddLog = () => {
+    if (!newLogContent.trim()) {
+      Taro.showToast({ title: '请输入处理内容', icon: 'none' });
+      return;
+    }
+    if (!selectedIssue) return;
+    addProgressLog(selectedIssue.id, {
+      content: newLogContent.trim(),
+      author: logAuthor
+    });
+    Taro.showToast({ title: '已添加进度', icon: 'success' });
+    setNewLogContent('');
+    const updatedIssue = issues.find((i) => i.id === selectedIssue.id);
+    if (updatedIssue) setSelectedIssue(updatedIssue);
+  };
+
+  const handleNoteBlur = () => {
+    if (!selectedIssue) return;
+    updateIssue(selectedIssue.id, { internalNote: selectedIssue.internalNote });
+    Taro.showToast({ title: '备注已保存', icon: 'success' });
+  };
+
+  const handleRefreshSelectedIssue = () => {
+    if (!selectedIssue) return;
+    const fresh = issues.find((i) => i.id === selectedIssue.id);
+    if (fresh) setSelectedIssue(fresh);
   };
 
   return (
@@ -224,7 +260,7 @@ const IssuesPage: React.FC = () => {
           <EmptyState icon="📋" title="暂无问题记录" description="点击右下角记录问题事件" />
         ) : (
           filteredIssues.map((issue) => (
-            <View key={issue.id} className={styles.issueCard}>
+            <View key={issue.id} className={styles.issueCard} onClick={() => openDetail(issue)}>
               <View className={styles.issueHeader}>
                 <View
                   className={styles.issueCategory}
@@ -258,7 +294,6 @@ const IssuesPage: React.FC = () => {
                       <View
                         key={idx}
                         className={styles.thumbnailItem}
-                        onClick={() => handlePreviewImage(issue.attachments, idx)}
                       >
                         <Image
                           src={url}
@@ -273,6 +308,14 @@ const IssuesPage: React.FC = () => {
                       </View>
                     ))}
                   </View>
+                </View>
+              )}
+
+              {issue.progressLogs.length > 0 && (
+                <View className={styles.progressBadge}>
+                  <Text className={styles.progressBadgeText}>
+                    📝 处理进度 {issue.progressLogs.length} 条
+                  </Text>
                 </View>
               )}
 
@@ -297,13 +340,13 @@ const IssuesPage: React.FC = () => {
                 <View className={styles.issueFooter}>
                   <Text
                     className={classnames(styles.btn, styles.btnOutline)}
-                    onClick={() => updateIssue(issue.id, { status: 'escalated' })}
+                    onClick={(e) => { e.stopPropagation(); updateIssue(issue.id, { status: 'escalated' }); }}
                   >
                     申请介入
                   </Text>
                   <Text
                     className={classnames(styles.btn, styles.btnPrimary)}
-                    onClick={() => openResolveIssue(issue.id)}
+                    onClick={(e) => { e.stopPropagation(); openResolveIssue(issue.id); }}
                   >
                     标记解决
                   </Text>
@@ -375,7 +418,6 @@ const IssuesPage: React.FC = () => {
                     src={url}
                     className={styles.uploadImage}
                     mode="aspectFill"
-                    onClick={() => handlePreviewImage(attachments, idx)}
                   />
                   <View
                     className={styles.uploadRemove}
@@ -419,13 +461,190 @@ const IssuesPage: React.FC = () => {
       </Modal>
 
       <Modal
+        visible={detailModalVisible}
+        title="问题详情"
+        onClose={() => { setDetailModalVisible(false); handleRefreshSelectedIssue(); }}
+        showFooter={false}
+      >
+        {selectedIssue && (
+          <ScrollView scrollY className={styles.detailScroll}>
+            <View className={styles.detailHeader}>
+              <View
+                className={styles.detailCategory}
+                style={{ backgroundColor: ISSUE_CATEGORY_COLOR[selectedIssue.category] }}
+              >
+                <Text>{ISSUE_CATEGORY_LABEL[selectedIssue.category]}</Text>
+              </View>
+              <Text className={classnames(styles.detailStatus, statusClass(selectedIssue.status))}>
+                {ISSUE_STATUS_LABEL[selectedIssue.status]}
+              </Text>
+            </View>
+
+            <Text className={styles.detailTitle}>{selectedIssue.title}</Text>
+            <View className={styles.detailMeta}>
+              <Text className={styles.detailMetaText}>记录人：{selectedIssue.reportedBy}</Text>
+              <Text className={styles.detailMetaText}>时间：{formatDateTime(selectedIssue.reportedAt)}</Text>
+            </View>
+
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionTitle}>📝 问题描述</Text>
+              <Text className={styles.detailDesc}>{selectedIssue.description}</Text>
+            </View>
+
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionTitle}>
+                👥 涉及人员 ({selectedIssue.involvedParties.length})
+              </Text>
+              <View className={styles.involvedRowDetail}>
+                {selectedIssue.involvedParties.map((p, idx) => (
+                  <Text key={idx} className={styles.personTagBig}>{p}</Text>
+                ))}
+              </View>
+            </View>
+
+            <View className={styles.detailSection}>
+              <View className={styles.detailSectionHeader}>
+                <Text className={styles.detailSectionTitle}>
+                  📎 证据附件 ({selectedIssue.attachments.length})
+                </Text>
+                {selectedIssue.attachments.length > 0 && (
+                  <Text
+                    className={styles.previewAllBtn}
+                    onClick={() => handlePreviewImage(selectedIssue.attachments)}
+                  >
+                    查看全部
+                  </Text>
+                )}
+              </View>
+              {selectedIssue.attachments.length === 0 ? (
+                <Text className={styles.detailEmptyText}>暂无证据附件</Text>
+              ) : (
+                <View className={styles.detailAttachmentRow}>
+                  {selectedIssue.attachments.map((url, idx) => (
+                    <View
+                      key={idx}
+                      className={styles.detailAttachmentItem}
+                      onClick={() => handlePreviewImage(selectedIssue.attachments)}
+                    >
+                      <Image
+                        src={url}
+                        className={styles.detailAttachmentImage}
+                        mode="aspectFill"
+                      />
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {selectedIssue.resolution && (
+              <View className={styles.detailSection}>
+                <Text className={styles.detailSectionTitle}>✅ 解决方案</Text>
+                <View className={styles.detailResolutionBox}>
+                  <Text className={styles.detailResolutionText}>{selectedIssue.resolution}</Text>
+                  {selectedIssue.resolvedAt && (
+                    <Text className={styles.detailResolutionTime}>
+                      解决时间：{formatDateTime(selectedIssue.resolvedAt)}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionTitle}>
+                📋 处理进度 ({(issues.find(i => i.id === selectedIssue.id) || selectedIssue).progressLogs.length})
+              </Text>
+              <View className={styles.progressList}>
+                {(issues.find(i => i.id === selectedIssue.id) || selectedIssue).progressLogs.length === 0 ? (
+                  <Text className={styles.detailEmptyText}>暂无处理进度</Text>
+                ) : (
+                  (issues.find(i => i.id === selectedIssue.id) || selectedIssue).progressLogs
+                    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                    .map((log) => (
+                    <View key={log.id} className={styles.progressItem}>
+                      <View className={styles.progressDot} />
+                      <View className={styles.progressContent}>
+                        <Text className={styles.progressText}>{log.content}</Text>
+                        <Text className={styles.progressMeta}>
+                          {log.author} · {formatDateTime(log.createdAt)}
+                        </Text>
+                      </View>
+                    </View>
+                  ))
+                )}
+              </View>
+
+              <View className={styles.addProgressArea}>
+                <FormField label="处理人">
+                  <FormPicker
+                    value={logAuthor}
+                    onChange={setLogAuthor}
+                    options={roommateOptions}
+                  />
+                </FormField>
+                <FormField label="添加进度">
+                  <FormTextarea
+                    value={newLogContent}
+                    onChange={setNewLogContent}
+                    placeholder="记录处理动作和沟通结果"
+                    maxLength={300}
+                  />
+                </FormField>
+                <Text className={classnames(styles.btn, styles.btnPrimary, styles.addProgressBtn)} onClick={handleAddLog}>
+                  添加进度记录
+                </Text>
+              </View>
+            </View>
+
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionTitle}>🔒 内部备注</Text>
+              <Text className={styles.noteHint}>只有自己可见的备注信息</Text>
+              <FormTextarea
+                value={issues.find(i => i.id === selectedIssue.id)?.internalNote || selectedIssue.internalNote || ''}
+                onChange={(v) => {
+                  if (selectedIssue) {
+                    const fresh = issues.find(i => i.id === selectedIssue.id) || selectedIssue;
+                    setSelectedIssue({ ...fresh, internalNote: v });
+                  }
+                }}
+                onBlur={handleNoteBlur}
+                placeholder="选填，如个人观察、后续计划等"
+                maxLength={500}
+              />
+            </View>
+
+            {(issues.find(i => i.id === selectedIssue.id) || selectedIssue).status !== 'resolved' && (
+              <View className={styles.detailFooter}>
+                <Text
+                  className={classnames(styles.btn, styles.btnOutline, styles.detailFooterBtn)}
+                  onClick={() => {
+                    updateIssue(selectedIssue.id, { status: 'escalated' });
+                    handleRefreshSelectedIssue();
+                  }}
+                >
+                  申请介入
+                </Text>
+                <Text
+                  className={classnames(styles.btn, styles.btnPrimary, styles.detailFooterBtn)}
+                  onClick={() => openResolveIssue(selectedIssue.id)}
+                >
+                  标记解决
+                </Text>
+              </View>
+            )}
+          </ScrollView>
+        )}
+      </Modal>
+
+      <Modal
         visible={previewVisible}
-        title={`图片预览 ${previewCurrent + 1}/${previewUrls.length}`}
-        onClose={handleClosePreview}
+        title="图片预览"
+        onClose={() => setPreviewVisible(false)}
         showFooter={false}
       >
         <View className={styles.previewContainer}>
-          <ScrollView scrollX scrollWithAnimation className={styles.previewScroll} showScrollbar={false}>
+          <ScrollView scrollX className={styles.previewScroll} showScrollbar={false}>
             <View className={styles.previewWrapper}>
               {previewUrls.map((url, idx) => (
                 <View key={idx} className={styles.previewItem}>

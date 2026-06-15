@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ITouchEvent } from '@tarojs/components';
 import classnames from 'classnames';
 import styles from './index.module.scss';
@@ -7,7 +7,7 @@ interface ModalProps {
   visible: boolean;
   title: string;
   onClose: () => void;
-  onConfirm?: () => void;
+  onConfirm?: () => boolean | Promise<boolean> | void | Promise<void>;
   confirmText?: string;
   cancelText?: string;
   showFooter?: boolean;
@@ -28,22 +28,41 @@ const Modal: React.FC<ModalProps> = ({
   confirmType = 'primary',
   children
 }) => {
+  const [confirming, setConfirming] = useState(false);
+
   if (!visible) return null;
 
-  const handleMaskClick = (e: ITouchEvent) => {
+  const handleMaskClick = (_e: ITouchEvent) => {
     onClose();
+  };
+
+  const handleModalClick = (e: ITouchEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleConfirmClick = async () => {
+    if (!onConfirm || confirming) return;
+    setConfirming(true);
+    try {
+      const result = await onConfirm();
+      if (result === true || result === undefined || result === null) {
+        onClose();
+      }
+    } finally {
+      setConfirming(false);
+    }
   };
 
   return (
     <View className={styles.mask} onClick={handleMaskClick}>
-      <View className={styles.modal} catchMove>
+      <View className={styles.modal} onClick={handleModalClick} catchMove>
         <View className={styles.modalHeader}>
           <Text className={styles.modalTitle}>{title}</Text>
           <Text className={styles.closeBtn} onClick={onClose}>×</Text>
         </View>
-        <View className={styles.modalBody}>{children}</View>
+        <View className={styles.modalBody} onClick={handleModalClick}>{children}</View>
         {showFooter && (
-          <View className={styles.modalFooter}>
+          <View className={styles.modalFooter} onClick={handleModalClick}>
             {showCancel && (
               <Text className={classnames(styles.btn, styles.btnCancel)} onClick={onClose}>
                 {cancelText}
@@ -52,11 +71,12 @@ const Modal: React.FC<ModalProps> = ({
             <Text
               className={classnames(
                 styles.btn,
-                confirmType === 'danger' ? styles.btnDanger : styles.btnConfirm
+                confirmType === 'danger' ? styles.btnDanger : styles.btnConfirm,
+                confirming && styles.btnDisabled
               )}
-              onClick={onConfirm}
+              onClick={handleConfirmClick}
             >
-              {confirmText}
+              {confirming ? '处理中...' : confirmText}
             </Text>
           </View>
         )}

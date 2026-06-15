@@ -307,3 +307,243 @@
   font-size: $font-size-sm;
   color: $color-text-secondary;
 }
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 10rpx;
+  margin-left: 8rpx;
+  border-radius: $radius-round;
+  background-color: $color-error;
+  color: $color-text-white;
+  font-size: 20rpx;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+}
+
+// 分摊预览（新增账单时）
+.previewShareBox {
+  margin-top: $spacing-sm;
+  padding: $spacing-md;
+  background-color: rgba(32, 201, 151, 0.05);
+  border-radius: $radius-md;
+  border: 1rpx solid rgba(32, 201, 151, 0.15);
+}
+
+.previewShareTitle {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.previewShareItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xs 0;
+}
+
+.previewShareName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.previewShareRatio {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-left: 8rpx;
+}
+
+.previewShareAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.previewShareTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 2rpx dashed rgba(32, 201, 151, 0.2);
+}
+
+.previewShareTotalLabel {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.previewShareTotalAmount {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+// 账单详情弹窗
+.detailCard {
+  padding: $spacing-xs 0;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.detailTypeTag {
+  padding: 8rpx 20rpx;
+  border-radius: $radius-sm;
+}
+
+.detailTypeText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.detailTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.detailAmount {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  margin-bottom: $spacing-lg;
+}
+
+.detailInfoBox {
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.detailInfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xs 0;
+
+  &:not(:last-child) {
+    border-bottom: 1rpx solid rgba(134, 144, 156, 0.1);
+  }
+}
+
+.detailInfoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.detailInfoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.detailShareBox {
+  background-color: rgba(32, 201, 151, 0.05);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  border: 1rpx solid rgba(32, 201, 151, 0.15);
+}
+
+.detailShareTitle {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.detailShareItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xs 0;
+}
+
+.detailShareItemSkip {
+  opacity: 0.5;
+}
+
+.detailShareName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.detailShareAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.detailShareTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 2rpx dashed rgba(32, 201, 151, 0.2);
+}
+
+.detailShareTotalLabel {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.detailShareTotalAmount {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.detailNoteBox {
+  background-color: $color-secondary-bg;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.detailNoteLabel {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-secondary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 8rpx;
+}
+
+.detailNote {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.detailPayBtn {
+  width: 100%;
+  text-align: center;
+  line-height: $button-height-lg;
+  display: block;
+  margin-top: $spacing-sm;
+}
+
+.billMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+  flex-wrap: wrap;
+}

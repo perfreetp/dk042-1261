@@ -113,10 +113,10 @@ const RulesPage: React.FC = () => {
     if (!clauseForm.content.trim()) e.content = '请输入条款内容';
     if (Object.keys(e).length > 0) {
       setErrors(e);
-      return;
+      return false;
     }
     addContractClause(clauseForm);
-    closeModal();
+    return true;
   };
 
   const saveItem = () => {
@@ -125,10 +125,10 @@ const RulesPage: React.FC = () => {
     if (!itemForm.quantity || itemForm.quantity <= 0) e.quantity = '请输入有效数量';
     if (Object.keys(e).length > 0) {
       setErrors(e);
-      return;
+      return false;
     }
     addPublicItem(itemForm);
-    closeModal();
+    return true;
   };
 
   const saveRule = () => {
@@ -136,16 +136,17 @@ const RulesPage: React.FC = () => {
     if (!ruleForm.content.trim()) e.content = '请输入约定内容';
     if (Object.keys(e).length > 0) {
       setErrors(e);
-      return;
+      return false;
     }
     addHouseRule(ruleForm);
-    closeModal();
+    return true;
   };
 
-  const handleSave = () => {
-    if (modalType === 'clause') saveClause();
-    if (modalType === 'item') saveItem();
-    if (modalType === 'rule') saveRule();
+  const handleSave = (): boolean => {
+    if (modalType === 'clause') return saveClause();
+    if (modalType === 'item') return saveItem();
+    if (modalType === 'rule') return saveRule();
+    return true;
   };
 
   return (

@@ -6,7 +6,7 @@ import {
   formatDate,
   getDaysRemaining,
   isOverdue,
-  calculateShareAmount,
+  calculateInvolvedShareAmounts,
   getMonthLabel,
   getCurrentMonthStr,
   getDefaultDueDate
@@ -20,7 +20,7 @@ import {
 import EmptyState from '@/components/EmptyState';
 import Tag from '@/components/Tag';
 import Modal from '@/components/Modal';
-import { FormField, FormInput, FormPicker, FormTextarea } from '@/components/FormField';
+import { FormField, FormInput, FormPicker, FormTextarea, FormCheckboxGroup } from '@/components/FormField';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 
@@ -33,7 +33,8 @@ const emptyBill: Omit<Bill, 'id' | 'createdAt'> = {
   billingPeriod: getCurrentMonthStr(),
   dueDate: getDefaultDueDate(),
   paid: false,
-  note: ''
+  note: '',
+  involvedRoommateIds: []
 };
 
 const billTypeOptions = Object.entries(BILL_TYPE_LABEL).map(([value, label]) => ({
@@ -44,12 +45,18 @@ const billTypeOptions = Object.entries(BILL_TYPE_LABEL).map(([value, label]) => 
 const BillsPage: React.FC = () => {
   const { bills, rentalProfile, toggleBillPaid, addBill } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('all');
-  const [expandedBill, setExpandedBill] = useState<string | null>(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [billForm, setBillForm] = useState<Omit<Bill, 'id' | 'createdAt'>>(emptyBill);
   const [billErrors, setBillErrors] = useState<Record<string, string>>({});
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
 
   const { roommates } = rentalProfile;
+
+  const roommateOptions = roommates.map((rm) => ({
+    label: rm.name,
+    value: rm.id
+  }));
 
   const filteredBills = useMemo(() => {
     let result = [...bills];
@@ -78,165 +85,164 @@ const BillsPage: React.FC = () => {
   };
 
   const getDueText = (bill: Bill) => {
-    if (bill.paid) return `已缴 · ${formatDate(bill.paidDate!)}`;
+    if (bill.paid) return `已缴，${formatDate(bill.paidDate!)}`;
+    if (isOverdue(bill.dueDate)) return `逾期 ${Math.abs(getDaysRemaining(bill.dueDate))} 天`;
     const days = getDaysRemaining(bill.dueDate);
-    if (days < 0) return `已逾期 ${Math.abs(days)} 天`;
-    if (days === 0) return '今天到期';
-    if (days <= 3) return `还剩 ${days} 天`;
-    return `到期日 ${formatDate(bill.dueDate)}`;
-  };
-
-  const toggleExpand = (billId: string) => {
-    setExpandedBill(expandedBill === billId ? null : billId);
+    if (days === 0) return '今日到期';
+    return `剩余 ${days} 天`;
   };
 
   const openAddBill = () => {
-    setBillForm({ ...emptyBill });
+    setBillForm({ ...emptyBill, involvedRoommateIds: roommates.map((r) => r.id) });
     setBillErrors({});
     setAddModalVisible(true);
   };
 
-  const handleTypeChange = (type: string) => {
-    const billType = type as BillType;
-    setBillForm({
-      ...billForm,
-      type: billType,
-      title: billForm.title || BILL_TYPE_LABEL[billType]
-    });
+  const openDetail = (bill: Bill) => {
+    setSelectedBill(bill);
+    setDetailModalVisible(true);
   };
 
   const saveBill = () => {
     const errors: Record<string, string> = {};
-    if (!billForm.title.trim()) errors.title = '请输入账单标题';
+    if (!billForm.title.trim()) errors.title = '请输入账单名称';
     if (!billForm.amount || billForm.amount <= 0) errors.amount = '请输入有效金额';
-    if (!billForm.billingPeriod) errors.billingPeriod = '请选择账期';
-    if (!billForm.dueDate) errors.dueDate = '请选择到期日';
+    if (!billForm.billingPeriod.trim()) errors.billingPeriod = '请选择账期月份';
+    if (!billForm.dueDate.trim()) errors.dueDate = '请选择缴费截止日';
+    if (billForm.involvedRoommateIds?.length === 0) errors.involvedRoommateIds = '请选择参与分摊的室友';
 
     if (Object.keys(errors).length > 0) {
       setBillErrors(errors);
-      return;
+      return false;
     }
 
-    addBill(billForm);
-    setAddModalVisible(false);
-    setActiveTab('all');
+    const newBill: Omit<Bill, 'id' | 'createdAt'> = {
+      ...billForm,
+      involvedRoommateIds: billForm.involvedRoommateIds?.length === roommates.length
+        ? undefined
+        : billForm.involvedRoommateIds
+    };
+    addBill(newBill);
   };
 
-  const tabs: { key: TabType; label: string; count: number }[] = [
-    { key: 'all', label: '全部', count: bills.length },
-    { key: 'pending', label: '待缴', count: stats.pendingCount },
-    { key: 'paid', label: '已缴', count: stats.paidCount }
-  ];
+  const handleTogglePaid = (bill: Bill) => {
+    toggleBillPaid(bill.id);
+    setSelectedBill(bills.find((b) => b.id === bill.id) || null);
+  };
+
+  const getPreviewShares = () => {
+    const involvedIds = billForm.involvedRoommateIds?.length ? billForm.involvedRoommateIds : roommates.map((r) => r.id);
+    return calculateInvolvedShareAmounts(
+      billForm.amount || 0,
+      roommates,
+      involvedIds
+    );
+  };
+
+  const getBillShares = (bill: Bill) => {
+    const involvedIds = bill.involvedRoommateIds?.length ? bill.involvedRoommateIds : roommates.map((r) => r.id);
+    return calculateInvolvedShareAmounts(bill.amount, roommates, involvedIds);
+  };
+
+  const previewShares = getPreviewShares();
+  const selectedBillShares = selectedBill ? getBillShares(selectedBill) : [];
 
   return (
     <ScrollView scrollY className={styles.page}>
-      <View className={styles.summary}>
-        <Text className={styles.summaryTitle}>本月待缴总额</Text>
-        <Text className={styles.summaryAmount}>{formatMoney(stats.pendingTotal)}</Text>
-        <View className={styles.summaryStats}>
-          <View className={styles.summaryStat}>
-            <Text className={styles.summaryStatValue}>{stats.pendingCount}</Text>
-            <Text className={styles.summaryStatLabel}>待缴账单</Text>
-          </View>
-          <View className={styles.summaryStat}>
-            <Text className={styles.summaryStatValue}>{formatMoney(stats.paidTotal)}</Text>
-            <Text className={styles.summaryStatLabel}>已缴金额</Text>
-          </View>
+      <View className={styles.pageHeader}>
+        <Text className={styles.pageTitle}>💡 账单分摊</Text>
+        <Text className={styles.pageDesc}>记录水电燃网，智能均分费用</Text>
+      </View>
+
+      <View className={styles.summaryRow}>
+        <View className={styles.summaryCard}>
+          <Text className={styles.summaryLabel}>待缴</Text>
+          <Text className={classnames(styles.summaryValue, styles.summaryPending)}>
+            ¥{formatMoney(stats.pendingTotal)}
+          </Text>
+          <Text className={styles.summaryCount}>{stats.pendingCount} 笔</Text>
+        </View>
+        <View className={styles.summaryCard}>
+          <Text className={styles.summaryLabel}>已缴</Text>
+          <Text className={classnames(styles.summaryValue, styles.summaryPaid)}>
+            ¥{formatMoney(stats.paidTotal)}
+          </Text>
+          <Text className={styles.summaryCount}>{stats.paidCount} 笔</Text>
         </View>
       </View>
 
-      <View className={styles.tabs}>
-        {tabs.map((tab) => (
-          <Text
-            key={tab.key}
-            className={classnames(styles.tab, activeTab === tab.key && styles.tabActive)}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.label} ({tab.count})
-          </Text>
-        ))}
+      <View className={styles.tabBar}>
+        <Text
+          className={classnames(styles.tabItem, activeTab === 'all' && styles.tabActive)}
+          onClick={() => setActiveTab('all')}
+        >
+          全部
+        </Text>
+        <Text
+          className={classnames(styles.tabItem, activeTab === 'pending' && styles.tabActive)}
+          onClick={() => setActiveTab('pending')}
+        >
+          待缴 {stats.pendingCount > 0 && <Text className={styles.tabBadge}>{stats.pendingCount}</Text>}
+        </Text>
+        <Text
+          className={classnames(styles.tabItem, activeTab === 'paid' && styles.tabActive)}
+          onClick={() => setActiveTab('paid')}
+        >
+          已缴 {stats.paidCount > 0 && <Text className={styles.tabBadge}>{stats.paidCount}</Text>}
+        </Text>
       </View>
 
       <View className={styles.contentArea}>
         {filteredBills.length === 0 ? (
-          <EmptyState icon="💰" title="暂无账单" description="点击右下角添加账单" />
+          <EmptyState icon="💰" title="暂无账单" description="点击右下角添加新账单" />
         ) : (
-          filteredBills.map((bill) => (
-            <View key={bill.id} className={styles.billCard}>
-              <View className={styles.billHeader}>
-                <View
-                  className={styles.billTypeTag}
-                  style={{ backgroundColor: BILL_TYPE_COLOR[bill.type] }}
-                >
-                  <Text>{BILL_TYPE_LABEL[bill.type]}</Text>
+          filteredBills.map((bill) => {
+            const involved = bill.involvedRoommateIds?.length
+              ? roommates.filter((r) => bill.involvedRoommateIds?.includes(r.id))
+              : roommates;
+            return (
+              <View key={bill.id} className={styles.billCard} onClick={() => openDetail(bill)}>
+                <View className={styles.billHeader}>
+                  <View
+                    className={styles.billType}
+                    style={{ backgroundColor: BILL_TYPE_COLOR[bill.type] }}
+                  >
+                    <Text>{BILL_TYPE_LABEL[bill.type]}</Text>
+                  </View>
+                  <Text className={styles.billAmount}>¥{formatMoney(bill.amount)}</Text>
                 </View>
                 <Text className={styles.billTitle}>{bill.title}</Text>
-                <Text className={styles.billAmount}>{formatMoney(bill.amount)}</Text>
-              </View>
-
-              {bill.note && (
-                <Text style={{ fontSize: 24, color: '#86909C', marginBottom: 16 }}>
-                  💡 {bill.note}
-                </Text>
-              )}
-
-              <View className={styles.billMeta}>
-                <View className={styles.billInfo}>
-                  <Text className={styles.billPeriod}>
-                    账期：{getMonthLabel(bill.billingPeriod)}
-                  </Text>
-                  <Text className={classnames(styles.billDue, getDueStyle(bill))}>
-                    {bill.paid ? '✅ ' : '⏰ '}
-                    {getDueText(bill)}
-                  </Text>
+                <View className={styles.billMeta}>
+                  <Text className={styles.billPeriod}>{getMonthLabel(bill.billingPeriod)}</Text>
+                  {bill.involvedRoommateIds?.length && bill.involvedRoommateIds.length < roommates.length && (
+                    <Tag type="warning">
+                      {involved.length}人分摊
+                    </Tag>
+                  )}
+                  {!bill.involvedRoommateIds?.length || bill.involvedRoommateIds.length === roommates.length ? (
+                    <Tag type="primary">
+                      全员分摊
+                    </Tag>
+                  ) : null}
                 </View>
-                <View className={styles.billActions}>
-                  <Text
-                    className={classnames(styles.btn, styles.btnOutline)}
-                    onClick={() => toggleExpand(bill.id)}
-                  >
-                    {expandedBill === bill.id ? '收起明细' : '分摊明细'}
-                  </Text>
-                  {!bill.paid && (
+                <View className={styles.billFooter}>
+                  <View className={classnames(styles.billDue, getDueStyle(bill))}>
+                    <Text>{getDueText(bill)}</Text>
+                  </View>
+                  {bill.paid ? (
+                    <Text className={styles.paidBadge}>✓ 已缴纳</Text>
+                  ) : (
                     <Text
-                      className={classnames(styles.btn, styles.btnPrimary)}
-                      onClick={() => toggleBillPaid(bill.id)}
+                      className={styles.payBtn}
+                      onClick={(e) => { e.stopPropagation(); handleTogglePaid(bill); }}
                     >
                       标记已缴
                     </Text>
                   )}
-                  {bill.paid && <Text className={styles.paidBadge}>✓ 已缴费</Text>}
                 </View>
               </View>
-
-              {expandedBill === bill.id && (
-                <View className={styles.shareSection}>
-                  <View className={styles.shareTitleRow}>
-                    <Text className={styles.shareTitle}>人均分摊</Text>
-                    <Text className={styles.shareTotal}>
-                      合计 {formatMoney(bill.amount)}
-                    </Text>
-                  </View>
-                  {roommates.map((rm) => (
-                    <View key={rm.id} className={styles.shareItem}>
-                      <View className={styles.sharePerson}>
-                        <View className={styles.shareAvatar}>
-                          <Text className={styles.shareAvatarText}>
-                            {rm.name.charAt(0)}
-                          </Text>
-                        </View>
-                        <Text className={styles.shareName}>{rm.name}</Text>
-                        <Tag type="default">{(rm.shareRatio * 100).toFixed(0)}%</Tag>
-                      </View>
-                      <Text className={styles.shareAmount}>
-                        {formatMoney(calculateShareAmount(bill.amount, rm.shareRatio))}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          ))
+            );
+          })
         )}
       </View>
 
@@ -246,28 +252,28 @@ const BillsPage: React.FC = () => {
 
       <Modal
         visible={addModalVisible}
-        title="添加费用账单"
+        title="添加账单"
         onClose={() => setAddModalVisible(false)}
         onConfirm={saveBill}
-        confirmText="保存"
+        confirmText="保存账单"
       >
-        <FormField label="费用类型" required>
+        <FormField label="账单类型" required>
           <FormPicker
             value={billForm.type}
-            onChange={handleTypeChange}
+            onChange={(v) => setBillForm({ ...billForm, type: v as BillType })}
             options={billTypeOptions}
           />
         </FormField>
 
-        <FormField label="账单标题" required error={billErrors.title}>
+        <FormField label="账单名称" required error={billErrors.title}>
           <FormInput
             value={billForm.title}
             onChange={(v) => setBillForm({ ...billForm, title: v })}
-            placeholder="如：6月份电费"
+            placeholder="如：5月份电费"
           />
         </FormField>
 
-        <FormField label="费用金额(元)" required error={billErrors.amount}>
+        <FormField label="账单金额(元)" required error={billErrors.amount}>
           <FormInput
             value={String(billForm.amount || '')}
             onChange={(v) => setBillForm({ ...billForm, amount: Number(v) })}
@@ -276,45 +282,157 @@ const BillsPage: React.FC = () => {
           />
         </FormField>
 
-        <View className="formRow">
-          <FormField label="账期月份" required error={billErrors.billingPeriod} className="formCol">
-            <FormInput
-              value={billForm.billingPeriod}
-              onChange={(v) => setBillForm({ ...billForm, billingPeriod: v })}
-              placeholder="YYYY-MM"
-            />
-          </FormField>
-          <FormField label="到期日期" required error={billErrors.dueDate} className="formCol">
-            <FormInput
-              value={billForm.dueDate}
-              onChange={(v) => setBillForm({ ...billForm, dueDate: v })}
-              placeholder="YYYY-MM-DD"
-            />
-          </FormField>
-        </View>
-
-        <FormField label="备注说明">
-          <FormTextarea
-            value={billForm.note || ''}
-            onChange={(v) => setBillForm({ ...billForm, note: v })}
-            placeholder="选填，如抄表读数等"
-            maxLength={200}
+        <FormField label="账期月份" required error={billErrors.billingPeriod}>
+          <FormInput
+            value={billForm.billingPeriod}
+            onChange={(v) => setBillForm({ ...billForm, billingPeriod: v })}
+            placeholder="如：2025-06"
           />
         </FormField>
 
-        <View className={styles.previewBox}>
-          <Text className={styles.previewTitle}>
-            📊 分摊预览（按室友比例自动计算）
-          </Text>
-          {roommates.map((rm) => (
-            <View key={rm.id} className={styles.previewRow}>
-              <Text>{rm.name} ({(rm.shareRatio * 100).toFixed(0)}%)</Text>
-              <Text>
-                {formatMoney(calculateShareAmount(billForm.amount || 0, rm.shareRatio))}
-              </Text>
+        <FormField label="缴费截止日" required error={billErrors.dueDate}>
+          <FormInput
+            value={billForm.dueDate}
+            onChange={(v) => setBillForm({ ...billForm, dueDate: v })}
+            placeholder="如：2025-06-15"
+          />
+        </FormField>
+
+        <FormField label="参与分摊室友" required error={billErrors.involvedRoommateIds}>
+          <FormCheckboxGroup
+            value={billForm.involvedRoommateIds || []}
+            onChange={(v) => setBillForm({ ...billForm, involvedRoommateIds: v })}
+            options={roommateOptions}
+          />
+        </FormField>
+
+        {billForm.amount > 0 && previewShares.some((s) => s.shareAmount > 0) && (
+          <View className={styles.previewShareBox}>
+            <Text className={styles.previewShareTitle}>📊 分摊预览</Text>
+            {previewShares.map((s) => s.shareAmount > 0 && (
+              <View key={s.roommateId} className={styles.previewShareItem}>
+                <Text className={styles.previewShareName}>
+                  {s.roommateName}
+                  <Text className={styles.previewShareRatio}>
+                    ({billForm.involvedRoommateIds?.length
+                      ? `${(s.shareRatio * 100 /
+                          roommates.filter((r) => billForm.involvedRoommateIds?.includes(r.id))
+                            .reduce((sum, r) => sum + r.shareRatio, 0)
+                        ).toFixed(1)}% 占比)`
+                      : `${(s.shareRatio * 100).toFixed(1)}%`})
+                  </Text>
+                </Text>
+                <Text className={styles.previewShareAmount}>¥{formatMoney(s.shareAmount)}</Text>
+              </View>
+            ))}
+            <View className={styles.previewShareTotal}>
+              <Text className={styles.previewShareTotalLabel}>合计</Text>
+              <Text className={styles.previewShareTotalAmount}>¥{formatMoney(billForm.amount)}</Text>
             </View>
-          ))}
-        </View>
+          </View>
+        )}
+
+        <FormField label="备注">
+          <FormTextarea
+            value={billForm.note || ''}
+            onChange={(v) => setBillForm({ ...billForm, note: v })}
+            placeholder="选填，补充说明"
+            maxLength={100}
+          />
+        </FormField>
+      </Modal>
+
+      <Modal
+        visible={detailModalVisible}
+        title="账单详情"
+        onClose={() => setDetailModalVisible(false)}
+        showFooter={false}
+      >
+        {selectedBill && (
+          <View className={styles.detailCard}>
+            <View className={styles.detailHeader}>
+              <View
+                className={styles.detailTypeTag}
+                style={{ backgroundColor: BILL_TYPE_COLOR[selectedBill.type] }}
+              >
+                <Text className={styles.detailTypeText}>{BILL_TYPE_LABEL[selectedBill.type]}</Text>
+              </View>
+              {selectedBill.paid ? (
+                <Tag type="success">已缴纳</Tag>
+              ) : (
+                <Tag type="warning">待缴费</Tag>
+              )}
+            </View>
+            <Text className={styles.detailTitle}>{selectedBill.title}</Text>
+            <Text className={styles.detailAmount}>¥{formatMoney(selectedBill.amount)}</Text>
+
+            <View className={styles.detailInfoBox}>
+              <View className={styles.detailInfoRow}>
+                <Text className={styles.detailInfoLabel}>账期</Text>
+                <Text className={styles.detailInfoValue}>{getMonthLabel(selectedBill.billingPeriod)}</Text>
+              </View>
+              <View className={styles.detailInfoRow}>
+                <Text className={styles.detailInfoLabel}>截止日</Text>
+                <Text className={styles.detailInfoValue}>{formatDate(selectedBill.dueDate)}</Text>
+              </View>
+              <View className={styles.detailInfoRow}>
+                <Text className={styles.detailInfoLabel}>缴费状态</Text>
+                <Text className={styles.detailInfoValue}>{getDueText(selectedBill)}</Text>
+              </View>
+              <View className={styles.detailInfoRow}>
+                <Text className={styles.detailInfoLabel}>参与分摊</Text>
+                <Text className={styles.detailInfoValue}>
+                  {selectedBillShares.filter((s) => s.shareAmount > 0).length} 位室友
+                </Text>
+              </View>
+            </View>
+
+            <View className={styles.detailShareBox}>
+              <Text className={styles.detailShareTitle}>📊 分摊明细</Text>
+              {selectedBillShares.map((s) => (
+                <View
+                  key={s.roommateId}
+                  className={classnames(
+                    styles.detailShareItem,
+                    s.shareAmount === 0 && styles.detailShareItemSkip
+                  )}
+                >
+                  <Text className={styles.detailShareName}>{s.roommateName}</Text>
+                  <Text className={styles.detailShareAmount}>
+                    {s.shareAmount > 0 ? `¥${formatMoney(s.shareAmount)}` : '不参与'}
+                  </Text>
+                </View>
+              ))}
+              <View className={styles.detailShareTotal}>
+                <Text className={styles.detailShareTotalLabel}>合计</Text>
+                <Text className={styles.detailShareTotalAmount}>¥{formatMoney(selectedBill.amount)}</Text>
+              </View>
+            </View>
+
+            {selectedBill.note && (
+              <View className={styles.detailNoteBox}>
+                <Text className={styles.detailNoteLabel}>📝 备注说明</Text>
+                <Text className={styles.detailNote}>{selectedBill.note}</Text>
+              </View>
+            )}
+
+            {!selectedBill.paid ? (
+              <Text
+                className={classnames(styles.btn, styles.btnPrimary, styles.detailPayBtn)}
+                onClick={() => handleTogglePaid(selectedBill)}
+              >
+                ✓ 标记为已缴费
+              </Text>
+            ) : (
+              <Text
+                className={classnames(styles.btn, styles.btnOutline, styles.detailPayBtn)}
+                onClick={() => handleTogglePaid(selectedBill)}
+              >
+                撤销已缴状态
+              </Text>
+            )}
+          </View>
+        )}
       </Modal>
     </ScrollView>
   );
