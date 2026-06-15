@@ -1,0 +1,287 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.summary {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-xl $spacing-lg $spacing-xl * 2;
+  margin-bottom: -48rpx;
+}
+
+.summaryTitle {
+  font-size: $font-size-md;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-sm;
+}
+
+.summaryAmount {
+  font-size: 56rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  margin-bottom: $spacing-lg;
+}
+
+.summaryStats {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.summaryStat {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.summaryStatValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  margin-bottom: 4rpx;
+}
+
+.summaryStatLabel {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tabs {
+  display: flex;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-xs;
+  margin: 0 $spacing-lg $spacing-md;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: $spacing-sm 0;
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  border-radius: $radius-md;
+  transition: all $transition-base;
+}
+
+.tabActive {
+  background-color: $color-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.contentArea {
+  padding: 0 $spacing-lg;
+}
+
+.billCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.billHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.billTypeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 20rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-text-white;
+}
+
+.billTitle {
+  flex: 1;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-left: $spacing-sm;
+}
+
+.billAmount {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.billMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.billInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.billPeriod {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.billDue {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.billDueWarning {
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+}
+
+.billDueError {
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.billActions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.btn {
+  @include button-reset;
+  padding: 0 $spacing-lg;
+  height: $button-height-sm;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.btnPrimary {
+  background-color: $color-primary;
+  color: $color-text-white;
+}
+
+.btnOutline {
+  background-color: transparent;
+  border: 1rpx solid $color-border;
+  color: $color-text-secondary;
+}
+
+.paidBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6rpx 20rpx;
+  border-radius: $radius-sm;
+  background-color: $color-success-bg;
+  color: $color-success;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.shareSection {
+  margin-top: $spacing-md;
+}
+
+.shareTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.shareTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.shareTotal {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.shareItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.sharePerson {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.shareAvatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shareAvatarText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.shareName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.shareAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.fab {
+  position: fixed;
+  right: $spacing-lg;
+  bottom: 140rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: $radius-round;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-float;
+  z-index: 100;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.fabIcon {
+  font-size: 48rpx;
+  color: $color-text-white;
+  line-height: 1;
+}

@@ -1,0 +1,337 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.pageHeader {
+  background: linear-gradient(135deg, #722ED1 0%, #9254DE 100%);
+  padding: $spacing-xl $spacing-lg $spacing-xl * 2;
+  margin-bottom: -48rpx;
+  color: $color-text-white;
+}
+
+.pageTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.pageDesc {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.summaryCard {
+  margin: 0 $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+}
+
+.summaryLabel {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.summaryValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.summaryDivider {
+  height: 1rpx;
+  background-color: $color-divider;
+  margin: $spacing-sm 0;
+}
+
+.refundRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md 0 $spacing-sm;
+}
+
+.refundLabel {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.refundValue {
+  font-size: 44rpx;
+  font-weight: $font-weight-bold;
+  color: $color-success;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 24rpx;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.statusDraft {
+  background-color: rgba(134, 144, 156, 0.1);
+  color: $color-text-secondary;
+}
+
+.statusPending {
+  background-color: $color-warning-bg;
+  color: $color-warning;
+}
+
+.statusCompleted {
+  background-color: $color-success-bg;
+  color: $color-success;
+}
+
+.statusDisputed {
+  background-color: $color-error-bg;
+  color: $color-error;
+}
+
+.contentArea {
+  padding: $spacing-md $spacing-lg 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md 0 $spacing-sm;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.sectionIcon {
+  font-size: 32rpx;
+}
+
+.sectionTitleText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.addAction {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.deductionCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.deductionItem {
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.deductionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.deductionType {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  background-color: $color-error-bg;
+  color: $color-error;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.deductionAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+}
+
+.deductionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+}
+
+.deductionDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-sm;
+}
+
+.disputeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+  background-color: $color-warning-bg;
+  color: $color-warning;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.disputeReason {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-warning-bg;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.totalDeduction {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  margin-top: $spacing-sm;
+  border-top: 2rpx dashed $color-divider;
+}
+
+.totalDeductionLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.totalDeductionValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+}
+
+.infoCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.infoLabel {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.infoValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.noteBox {
+  background-color: $color-secondary-bg;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-top: $spacing-md;
+}
+
+.noteLabel {
+  font-size: $font-size-xs;
+  color: $color-secondary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 8rpx;
+}
+
+.noteContent {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.actionBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: $color-bg-card;
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  display: flex;
+  gap: $spacing-md;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+.btn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #722ED1 0%, #9254DE 100%);
+  color: $color-text-white;
+}
+
+.btnOutline {
+  background-color: transparent;
+  border: 1rpx solid $color-border;
+  color: $color-text-secondary;
+}
+
+.btnSuccess {
+  background: linear-gradient(135deg, $color-success 0%, #23C343 100%);
+  color: $color-text-white;
+}
+
+.emptyHint {
+  text-align: center;
+  padding: $spacing-xl;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
