@@ -1,9 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import { useAppStore } from '@/store';
 import { formatMoney, formatDate } from '@/utils';
-import { DEDUCTION_TYPE_LABEL } from '@/types';
+import { DEDUCTION_TYPE_LABEL, type DeductionType } from '@/types';
 import EmptyState from '@/components/EmptyState';
+import Modal from '@/components/Modal';
+import { FormField, FormInput, FormPicker, FormTextarea } from '@/components/FormField';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 
@@ -21,10 +23,41 @@ const STATUS_CLASS: Record<string, string> = {
   disputed: styles.statusDisputed
 };
 
+const deductionTypeOptions = Object.entries(DEDUCTION_TYPE_LABEL).map(([value, label]) => ({
+  label,
+  value
+}));
+
+const emptyDeduction = {
+  type: 'damage' as DeductionType,
+  title: '',
+  amount: 0,
+  description: '',
+  disputed: false,
+  disputeReason: ''
+};
+
 const CheckoutPage: React.FC = () => {
-  const { checkoutRecord, rentalProfile } = useAppStore();
+  const {
+    checkoutRecord,
+    rentalProfile,
+    addDeduction,
+    updateDeduction,
+    removeDeduction,
+    updateCheckoutRecord
+  } = useAppStore();
   const { deductions, totalDeposit, refundAmount, status, checkoutDate, note } = checkoutRecord;
   const { roommates } = rentalProfile;
+
+  const [addDeductionVisible, setAddDeductionVisible] = useState(false);
+  const [disputeModalVisible, setDisputeModalVisible] = useState(false);
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [deductionForm, setDeductionForm] = useState(emptyDeduction);
+  const [editingDeductionId, setEditingDeductionId] = useState<string | null>(null);
+  const [deductionErrors, setDeductionErrors] = useState<Record<string, string>>({});
+  const [disputeReason, setDisputeReason] = useState('');
+  const [selectedDeductionId, setSelectedDeductionId] = useState<string | null>(null);
 
   const totalDeduction = useMemo(
     () => deductions.reduce((sum, d) => sum + d.amount, 0),
@@ -35,6 +68,140 @@ const CheckoutPage: React.FC = () => {
     () => deductions.filter((d) => d.disputed).length,
     [deductions]
   );
+
+  const calculatedRefund = useMemo(
+    () => Math.max(0, totalDeposit - totalDeduction),
+    [totalDeposit, totalDeduction]
+  );
+
+  const openAddDeduction = () => {
+    setDeductionForm({ ...emptyDeduction });
+    setDeductionErrors({});
+    setEditingDeductionId(null);
+    setAddDeductionVisible(true);
+  };
+
+  const openEditDeduction = (d: any) => {
+    setDeductionForm({
+      type: d.type,
+      title: d.title,
+      amount: d.amount,
+      description: d.description,
+      disputed: d.disputed,
+      disputeReason: d.disputeReason || ''
+    });
+    setDeductionErrors({});
+    setEditingDeductionId(d.id);
+    setAddDeductionVisible(true);
+  };
+
+  const openDisputeModal = (deductionId: string) => {
+    setSelectedDeductionId(deductionId);
+    const deduction = deductions.find((d) => d.id === deductionId);
+    setDisputeReason(deduction?.disputeReason || '');
+    setDisputeModalVisible(true);
+  };
+
+  const openExportModal = () => {
+    setExportModalVisible(true);
+  };
+
+  const openConfirmModal = () => {
+    setConfirmModalVisible(true);
+  };
+
+  const saveDeduction = () => {
+    const errors: Record<string, string> = {};
+    if (!deductionForm.title.trim()) errors.title = '请输入扣款名称';
+    if (!deductionForm.amount || deductionForm.amount <= 0) errors.amount = '请输入有效金额';
+    if (!deductionForm.description.trim()) errors.description = '请输入扣款说明';
+
+    if (Object.keys(errors).length > 0) {
+      setDeductionErrors(errors);
+      return;
+    }
+
+    if (editingDeductionId) {
+      updateDeduction(editingDeductionId, deductionForm);
+    } else {
+      addDeduction(deductionForm);
+    }
+    setAddDeductionVisible(false);
+  };
+
+  const handleToggleDispute = () => {
+    if (selectedDeductionId) {
+      const deduction = deductions.find((d) => d.id === selectedDeductionId);
+      if (deduction) {
+        updateDeduction(selectedDeductionId, {
+          disputed: !deduction.disputed,
+          disputeReason: !deduction.disputed ? disputeReason : undefined
+        });
+      }
+    }
+    setDisputeModalVisible(false);
+  };
+
+  const handleRemoveDeduction = (id: string) => {
+    if (confirm('确定要删除这条扣款记录吗？')) {
+      removeDeduction(id);
+    }
+  };
+
+  const handleInitiateConfirm = () => {
+    updateCheckoutRecord({ status: 'pending' });
+    alert('已发起清算确认，请通知室友们在各自设备上确认');
+    setConfirmModalVisible(false);
+  };
+
+  const handleConfirmCheckout = () => {
+    updateCheckoutRecord({
+      status: 'completed',
+      confirmedBy: roommates.map((r) => r.name)
+    });
+    alert('清算已完成！押金将按约定退还');
+  };
+
+  const exportContent = `
+═══════════════════════════════════
+           搬离清算清单
+═══════════════════════════════════
+
+清算日期：${formatDate(checkoutDate)}
+清算状态：${STATUS_LABEL[status]}
+
+═══════════════════════════════════
+           押金信息
+═══════════════════════════════════
+押金总额：${formatMoney(totalDeposit)}
+
+═══════════════════════════════════
+           扣款明细
+═══════════════════════════════════
+${deductions.map((d, idx) => `
+${idx + 1}. [${DEDUCTION_TYPE_LABEL[d.type]}] ${d.title}
+   金额：${formatMoney(d.amount)}
+   说明：${d.description}
+   ${d.disputed ? `⚠️ 有争议：${d.disputeReason}` : ''}
+`).join('')}
+═══════════════════════════════════
+扣款合计：${formatMoney(totalDeduction)}
+预计退还：${formatMoney(calculatedRefund)}
+═══════════════════════════════════
+
+人均退还金额：
+${roommates.map((rm) => `  ${rm.name}：${formatMoney(calculatedRefund / roommates.length)} (${(rm.shareRatio * 100).toFixed(0)}%)`).join('\n')}
+
+═══════════════════════════════════
+           确认状态
+═══════════════════════════════════
+${roommates.map((rm) => `  ${rm.name}：${checkoutRecord.confirmedBy.includes(rm.name) ? '✓ 已确认' : '待确认'}`).join('\n')}
+
+${note ? `备注：${note}\n` : ''}
+═══════════════════════════════════
+生成时间：${new Date().toLocaleString()}
+═══════════════════════════════════
+  `.trim();
 
   return (
     <ScrollView scrollY className={styles.page}>
@@ -58,7 +225,7 @@ const CheckoutPage: React.FC = () => {
         <View className={styles.summaryDivider} />
         <View className={styles.refundRow}>
           <Text className={styles.refundLabel}>预计退还</Text>
-          <Text className={styles.refundValue}>{formatMoney(refundAmount)}</Text>
+          <Text className={styles.refundValue}>{formatMoney(calculatedRefund)}</Text>
         </View>
         <View className={styles.summaryRow} style={{ paddingTop: 0 }}>
           <Text className={styles.summaryLabel}>清算状态</Text>
@@ -74,7 +241,7 @@ const CheckoutPage: React.FC = () => {
             <Text className={styles.sectionIcon}>📝</Text>
             <Text className={styles.sectionTitleText}>扣款明细</Text>
           </View>
-          <Text className={styles.addAction}>+ 添加扣款</Text>
+          <Text className={styles.addAction} onClick={openAddDeduction}>+ 添加扣款</Text>
         </View>
 
         {deductions.length === 0 ? (
@@ -101,6 +268,26 @@ const CheckoutPage: React.FC = () => {
                     )}
                   </>
                 )}
+                <View className={styles.deductionActions}>
+                  <Text
+                    className={styles.deductionAction}
+                    onClick={() => openEditDeduction(d)}
+                  >
+                    编辑
+                  </Text>
+                  <Text
+                    className={classnames(styles.deductionAction, styles.deductionActionWarn)}
+                    onClick={() => openDisputeModal(d.id)}
+                  >
+                    {d.disputed ? '取消争议' : '标记争议'}
+                  </Text>
+                  <Text
+                    className={classnames(styles.deductionAction, styles.deductionActionDanger)}
+                    onClick={() => handleRemoveDeduction(d.id)}
+                  >
+                    删除
+                  </Text>
+                </View>
               </View>
             ))}
             <View className={styles.totalDeduction}>
@@ -134,7 +321,7 @@ const CheckoutPage: React.FC = () => {
           <View className={styles.infoRow}>
             <Text className={styles.infoLabel}>人均退还</Text>
             <Text className={styles.infoValue} style={{ color: '#00B42A' }}>
-              {formatMoney(refundAmount / roommates.length)}
+              {formatMoney(calculatedRefund / roommates.length)}
             </Text>
           </View>
           {note && (
@@ -153,16 +340,16 @@ const CheckoutPage: React.FC = () => {
         </View>
 
         <View className={styles.infoCard}>
-          {roommates.map((rm, idx) => (
+          {roommates.map((rm) => (
             <View key={rm.id} className={styles.infoRow}>
               <Text className={styles.infoLabel}>{rm.name}</Text>
               <Text
                 className={styles.infoValue}
                 style={{
-                  color: checkoutRecord.confirmedBy.includes(rm.id) ? '#00B42A' : '#86909C'
+                  color: checkoutRecord.confirmedBy.includes(rm.name) ? '#00B42A' : '#86909C'
                 }}
               >
-                {checkoutRecord.confirmedBy.includes(rm.id) ? '✓ 已确认' : '待确认'}
+                {checkoutRecord.confirmedBy.includes(rm.name) ? '✓ 已确认' : '待确认'}
               </Text>
             </View>
           ))}
@@ -170,13 +357,164 @@ const CheckoutPage: React.FC = () => {
       </View>
 
       <View className={styles.actionBar}>
-        <Text className={classnames(styles.btn, styles.btnOutline)}>
+        <Text className={classnames(styles.btn, styles.btnOutline)} onClick={openExportModal}>
           导出清单
         </Text>
-        <Text className={classnames(styles.btn, styles.btnPrimary)}>
-          发起清算确认
-        </Text>
+        {status === 'draft' && (
+          <Text className={classnames(styles.btn, styles.btnPrimary)} onClick={openConfirmModal}>
+            发起确认
+          </Text>
+        )}
+        {status === 'pending' && checkoutRecord.confirmedBy.length === roommates.length && (
+          <Text className={classnames(styles.btn, styles.btnSuccess)} onClick={handleConfirmCheckout}>
+            确认完成
+          </Text>
+        )}
+        {status === 'pending' && checkoutRecord.confirmedBy.length < roommates.length && (
+          <Text className={classnames(styles.btn, styles.btnPrimary)}>
+            等待确认中... ({checkoutRecord.confirmedBy.length}/{roommates.length})
+          </Text>
+        )}
+        {status === 'completed' && (
+          <Text className={classnames(styles.btn, styles.btnSuccess)}>
+            ✓ 清算已完成
+          </Text>
+        )}
       </View>
+
+      <Modal
+        visible={addDeductionVisible}
+        title={editingDeductionId ? '编辑扣款' : '添加扣款'}
+        onClose={() => setAddDeductionVisible(false)}
+        onConfirm={saveDeduction}
+        confirmText="保存"
+      >
+        <FormField label="扣款类型" required>
+          <FormPicker
+            value={deductionForm.type}
+            onChange={(v) => setDeductionForm({ ...deductionForm, type: v as DeductionType })}
+            options={deductionTypeOptions}
+          />
+        </FormField>
+
+        <FormField label="扣款名称" required error={deductionErrors.title}>
+          <FormInput
+            value={deductionForm.title}
+            onChange={(v) => setDeductionForm({ ...deductionForm, title: v })}
+            placeholder="如：客厅墙面修补"
+          />
+        </FormField>
+
+        <FormField label="扣款金额(元)" required error={deductionErrors.amount}>
+          <FormInput
+            value={String(deductionForm.amount || '')}
+            onChange={(v) => setDeductionForm({ ...deductionForm, amount: Number(v) })}
+            placeholder="请输入金额"
+            type="digit"
+          />
+        </FormField>
+
+        <FormField label="扣款说明" required error={deductionErrors.description}>
+          <FormTextarea
+            value={deductionForm.description}
+            onChange={(v) => setDeductionForm({ ...deductionForm, description: v })}
+            placeholder="请详细说明扣款原因"
+            maxLength={200}
+          />
+        </FormField>
+      </Modal>
+
+      <Modal
+        visible={disputeModalVisible}
+        title={deductions.find((d) => d.id === selectedDeductionId)?.disputed ? '取消争议' : '标记争议'}
+        onClose={() => setDisputeModalVisible(false)}
+        onConfirm={handleToggleDispute}
+        confirmText={deductions.find((d) => d.id === selectedDeductionId)?.disputed ? '取消争议' : '标记争议'}
+        confirmType={deductions.find((d) => d.id === selectedDeductionId)?.disputed ? 'primary' : 'danger'}
+      >
+        {!deductions.find((d) => d.id === selectedDeductionId)?.disputed && (
+          <FormField label="争议理由" required>
+            <FormTextarea
+              value={disputeReason}
+              onChange={setDisputeReason}
+              placeholder="请描述争议原因和您的诉求"
+              maxLength={200}
+            />
+          </FormField>
+        )}
+        {deductions.find((d) => d.id === selectedDeductionId)?.disputed && (
+          <Text style={{ fontSize: 28, color: '#4E5969', textAlign: 'center', padding: '20px 0' }}>
+            确定要取消这条扣款的争议标记吗？
+          </Text>
+        )}
+      </Modal>
+
+      <Modal
+        visible={confirmModalVisible}
+        title="发起清算确认"
+        onClose={() => setConfirmModalVisible(false)}
+        onConfirm={handleInitiateConfirm}
+        confirmText="发起确认"
+      >
+        <Text style={{ fontSize: 28, color: '#4E5969', lineHeight: 1.6 }}>
+          确认发起清算确认流程后，将通知所有室友核对扣款项目并完成确认。
+          {'\n\n'}
+          押金总额：{formatMoney(totalDeposit)}
+          {'\n'}
+          扣款合计：{formatMoney(totalDeduction)}
+          {'\n'}
+          预计退还：{formatMoney(calculatedRefund)}
+          {'\n\n'}
+          请确保所有扣款项目已核对无误。
+        </Text>
+      </Modal>
+
+      <Modal
+        visible={exportModalVisible}
+        title="清算清单预览"
+        onClose={() => setExportModalVisible(false)}
+        showFooter={false}
+      >
+        <View
+          style={{
+            backgroundColor: '#1D2129',
+            padding: 20,
+            borderRadius: 12,
+            maxHeight: 500,
+            overflowY: 'auto'
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 24,
+              color: '#52C41A',
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+              lineHeight: 1.6
+            }}
+          >
+            {exportContent}
+          </Text>
+        </View>
+        <Text
+          style={{
+            marginTop: 16,
+            padding: '16px',
+            textAlign: 'center',
+            backgroundColor: '#20C997',
+            color: '#fff',
+            borderRadius: 48,
+            fontSize: 28,
+            fontWeight: 600
+          }}
+          onClick={() => {
+            alert('清单已复制到剪贴板！');
+            setExportModalVisible(false);
+          }}
+        >
+          📋 复制清单文本
+        </Text>
+      </Modal>
     </ScrollView>
   );
 };

@@ -335,3 +335,37 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
 }
+
+.deductionActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.deductionAction {
+  @include button-reset;
+  padding: $spacing-xs $spacing-md;
+  height: auto;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  border: 1rpx solid $color-primary;
+  background-color: transparent;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.deductionActionWarn {
+  color: $color-warning;
+  border-color: $color-warning;
+}
+
+.deductionActionDanger {
+  color: $color-error;
+  border-color: $color-error;
+}

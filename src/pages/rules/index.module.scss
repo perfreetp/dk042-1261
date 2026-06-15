@@ -261,3 +261,71 @@
   color: $color-text-white;
   line-height: 1;
 }
+
+.removeBtn {
+  font-size: $font-size-xs;
+  color: $color-error;
+  padding: 4rpx 16rpx;
+  border: 1rpx solid $color-error;
+  border-radius: $radius-xs;
+  margin-left: auto;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.removeBtnSmall {
+  font-size: 22rpx;
+  color: $color-error;
+  padding: 4rpx 12rpx;
+  border: 1rpx solid $color-error;
+  border-radius: $radius-xs;
+  margin-left: $spacing-sm;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.clauseHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.clauseCategory {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+}
+
+.catRent {
+  background-color: rgba(32, 201, 151, 0.1);
+  color: $color-primary;
+}
+
+.catDeposit {
+  background-color: rgba(255, 159, 67, 0.1);
+  color: $color-secondary;
+}
+
+.catMaintenance {
+  background-color: rgba(22, 93, 255, 0.1);
+  color: #165DFF;
+}
+
+.catTermination {
+  background-color: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+}
+
+.catOther {
+  background-color: $color-bg-hover;
+  color: $color-text-secondary;
+}
