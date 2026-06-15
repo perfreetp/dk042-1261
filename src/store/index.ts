@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import Taro from '@tarojs/taro';
 import type {
   RentalProfile,
   Bill,
@@ -21,6 +22,40 @@ import {
   mockCheckoutRecord
 } from '@/data/mock';
 import { generateId } from '@/utils';
+
+const STORAGE_KEY = 'roommate_app_data';
+
+interface PersistedData {
+  rentalProfile: RentalProfile;
+  bills: Bill[];
+  contractClauses: ContractClause[];
+  publicItems: PublicItem[];
+  houseRules: HouseRule[];
+  issues: Issue[];
+  checkoutRecord: CheckoutRecord;
+}
+
+const loadPersistedData = (): PersistedData | null => {
+  try {
+    const raw = Taro.getStorageSync(STORAGE_KEY);
+    if (raw) {
+      return JSON.parse(raw) as PersistedData;
+    }
+  } catch (e) {
+    console.error('Failed to load persisted data:', e);
+  }
+  return null;
+};
+
+const persistData = (data: PersistedData) => {
+  try {
+    Taro.setStorageSync(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Failed to persist data:', e);
+  }
+};
+
+const saved = loadPersistedData();
 
 interface AppState {
   rentalProfile: RentalProfile;
@@ -67,26 +102,43 @@ interface AppState {
   completeCheckout: () => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  rentalProfile: mockRentalProfile,
-  bills: mockBills,
-  contractClauses: mockContractClauses,
-  publicItems: mockPublicItems,
-  houseRules: mockHouseRules,
-  issues: mockIssues,
-  checkoutRecord: mockCheckoutRecord,
+const getPersistableState = (state: AppState): PersistedData => ({
+  rentalProfile: state.rentalProfile,
+  bills: state.bills,
+  contractClauses: state.contractClauses,
+  publicItems: state.publicItems,
+  houseRules: state.houseRules,
+  issues: state.issues,
+  checkoutRecord: state.checkoutRecord
+});
 
-  setRentalProfile: (profile) => set({ rentalProfile: profile }),
-  updateRentalProfile: (updates) =>
-    set((state) => ({ rentalProfile: { ...state.rentalProfile, ...updates } })),
-  addRoommate: (roommate) =>
+export const useAppStore = create<AppState>((set, get) => ({
+  rentalProfile: saved?.rentalProfile || mockRentalProfile,
+  bills: saved?.bills || mockBills,
+  contractClauses: saved?.contractClauses || mockContractClauses,
+  publicItems: saved?.publicItems || mockPublicItems,
+  houseRules: saved?.houseRules || mockHouseRules,
+  issues: saved?.issues || mockIssues,
+  checkoutRecord: saved?.checkoutRecord || mockCheckoutRecord,
+
+  setRentalProfile: (profile) => {
+    set({ rentalProfile: profile });
+    persistData(getPersistableState(get()));
+  },
+  updateRentalProfile: (updates) => {
+    set((state) => ({ rentalProfile: { ...state.rentalProfile, ...updates } }));
+    persistData(getPersistableState(get()));
+  },
+  addRoommate: (roommate) => {
     set((state) => ({
       rentalProfile: {
         ...state.rentalProfile,
         roommates: [...state.rentalProfile.roommates, { ...roommate, id: generateId() }]
       }
-    })),
-  updateRoommate: (id, updates) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  updateRoommate: (id, updates) => {
     set((state) => ({
       rentalProfile: {
         ...state.rentalProfile,
@@ -94,79 +146,109 @@ export const useAppStore = create<AppState>((set) => ({
           r.id === id ? { ...r, ...updates } : r
         )
       }
-    })),
-  removeRoommate: (id) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  removeRoommate: (id) => {
     set((state) => ({
       rentalProfile: {
         ...state.rentalProfile,
         roommates: state.rentalProfile.roommates.filter((r) => r.id !== id)
       }
-    })),
+    }));
+    persistData(getPersistableState(get()));
+  },
 
-  addBill: (bill) =>
+  addBill: (bill) => {
     set((state) => ({
       bills: [{ ...bill, id: generateId(), createdAt: new Date().toISOString() }, ...state.bills]
-    })),
-  updateBill: (id, updates) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  updateBill: (id, updates) => {
     set((state) => ({
       bills: state.bills.map((b) => (b.id === id ? { ...b, ...updates } : b))
-    })),
-  toggleBillPaid: (id) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  toggleBillPaid: (id) => {
     set((state) => ({
       bills: state.bills.map((b) =>
         b.id === id
           ? { ...b, paid: !b.paid, paidDate: !b.paid ? new Date().toISOString() : undefined }
           : b
       )
-    })),
-  removeBill: (id) =>
-    set((state) => ({ bills: state.bills.filter((b) => b.id !== id) })),
+    }));
+    persistData(getPersistableState(get()));
+  },
+  removeBill: (id) => {
+    set((state) => ({ bills: state.bills.filter((b) => b.id !== id) }));
+    persistData(getPersistableState(get()));
+  },
 
-  addContractClause: (clause) =>
+  addContractClause: (clause) => {
     set((state) => ({
       contractClauses: [...state.contractClauses, { ...clause, id: generateId() }]
-    })),
-  updateContractClause: (id, updates) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  updateContractClause: (id, updates) => {
     set((state) => ({
       contractClauses: state.contractClauses.map((c) =>
         c.id === id ? { ...c, ...updates } : c
       )
-    })),
-  removeContractClause: (id) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  removeContractClause: (id) => {
     set((state) => ({
       contractClauses: state.contractClauses.filter((c) => c.id !== id)
-    })),
+    }));
+    persistData(getPersistableState(get()));
+  },
 
-  addPublicItem: (item) =>
+  addPublicItem: (item) => {
     set((state) => ({
       publicItems: [...state.publicItems, { ...item, id: generateId() }]
-    })),
-  updatePublicItem: (id, updates) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  updatePublicItem: (id, updates) => {
     set((state) => ({
       publicItems: state.publicItems.map((i) =>
         i.id === id ? { ...i, ...updates } : i
       )
-    })),
-  removePublicItem: (id) =>
-    set((state) => ({ publicItems: state.publicItems.filter((i) => i.id !== id) })),
+    }));
+    persistData(getPersistableState(get()));
+  },
+  removePublicItem: (id) => {
+    set((state) => ({ publicItems: state.publicItems.filter((i) => i.id !== id) }));
+    persistData(getPersistableState(get()));
+  },
 
-  addHouseRule: (rule) =>
+  addHouseRule: (rule) => {
     set((state) => ({
       houseRules: [
         ...state.houseRules,
         { ...rule, id: generateId(), createdAt: new Date().toISOString() }
       ]
-    })),
-  updateHouseRule: (id, updates) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  updateHouseRule: (id, updates) => {
     set((state) => ({
       houseRules: state.houseRules.map((r) =>
         r.id === id ? { ...r, ...updates } : r
       )
-    })),
-  removeHouseRule: (id) =>
-    set((state) => ({ houseRules: state.houseRules.filter((r) => r.id !== id) })),
+    }));
+    persistData(getPersistableState(get()));
+  },
+  removeHouseRule: (id) => {
+    set((state) => ({ houseRules: state.houseRules.filter((r) => r.id !== id) }));
+    persistData(getPersistableState(get()));
+  },
 
-  addIssue: (issue) =>
+  addIssue: (issue) => {
     set((state) => ({
       issues: [
         {
@@ -177,12 +259,16 @@ export const useAppStore = create<AppState>((set) => ({
         },
         ...state.issues
       ]
-    })),
-  updateIssue: (id, updates) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  updateIssue: (id, updates) => {
     set((state) => ({
       issues: state.issues.map((i) => (i.id === id ? { ...i, ...updates } : i))
-    })),
-  resolveIssue: (id, resolution) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  resolveIssue: (id, resolution) => {
     set((state) => ({
       issues: state.issues.map((i) =>
         i.id === id
@@ -194,18 +280,24 @@ export const useAppStore = create<AppState>((set) => ({
             }
           : i
       )
-    })),
+    }));
+    persistData(getPersistableState(get()));
+  },
 
-  updateCheckoutRecord: (updates) =>
-    set((state) => ({ checkoutRecord: { ...state.checkoutRecord, ...updates } })),
-  addDeduction: (deduction) =>
+  updateCheckoutRecord: (updates) => {
+    set((state) => ({ checkoutRecord: { ...state.checkoutRecord, ...updates } }));
+    persistData(getPersistableState(get()));
+  },
+  addDeduction: (deduction) => {
     set((state) => ({
       checkoutRecord: {
         ...state.checkoutRecord,
         deductions: [...state.checkoutRecord.deductions, { ...deduction, id: generateId() }]
       }
-    })),
-  updateDeduction: (id, updates) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  updateDeduction: (id, updates) => {
     set((state) => ({
       checkoutRecord: {
         ...state.checkoutRecord,
@@ -213,16 +305,20 @@ export const useAppStore = create<AppState>((set) => ({
           d.id === id ? { ...d, ...updates } : d
         )
       }
-    })),
-  removeDeduction: (id) =>
+    }));
+    persistData(getPersistableState(get()));
+  },
+  removeDeduction: (id) => {
     set((state) => ({
       checkoutRecord: {
         ...state.checkoutRecord,
         deductions: state.checkoutRecord.deductions.filter((d) => d.id !== id)
       }
-    })),
+    }));
+    persistData(getPersistableState(get()));
+  },
 
-  initiateCheckoutConfirm: () =>
+  initiateCheckoutConfirm: () => {
     set((state) => {
       const confirmations: RoommateConfirmation[] = state.rentalProfile.roommates.map((rm) => ({
         roommateId: rm.id,
@@ -236,9 +332,11 @@ export const useAppStore = create<AppState>((set) => ({
           confirmations
         }
       };
-    }),
+    });
+    persistData(getPersistableState(get()));
+  },
 
-  confirmRoommate: (roommateId) =>
+  confirmRoommate: (roommateId) => {
     set((state) => {
       const newConfirmations = state.checkoutRecord.confirmations.map((c) =>
         c.roommateId === roommateId
@@ -251,13 +349,17 @@ export const useAppStore = create<AppState>((set) => ({
           confirmations: newConfirmations
         }
       };
-    }),
+    });
+    persistData(getPersistableState(get()));
+  },
 
-  completeCheckout: () =>
+  completeCheckout: () => {
     set((state) => ({
       checkoutRecord: {
         ...state.checkoutRecord,
         status: 'completed'
       }
-    }))
+    }));
+    persistData(getPersistableState(get()));
+  }
 }));

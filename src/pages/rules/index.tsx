@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { useAppStore } from '@/store';
 import { formatDate, formatMoney } from '@/utils';
 import type {
@@ -179,10 +180,9 @@ const RulesPage: React.FC = () => {
                     <Text className={styles.clauseTitle}>{clause.title}</Text>
                     <Text
                       className={styles.removeBtn}
-                      onClick={() => {
-                        if (confirm('确定删除这条条款吗？')) {
-                          removeContractClause(clause.id);
-                        }
+                      onClick={async () => {
+                        const res = await Taro.showModal({ title: '确认删除', content: '确定删除这条条款吗？' });
+                        if (res.confirm) removeContractClause(clause.id);
                       }}
                     >
                       删除
@@ -225,10 +225,9 @@ const RulesPage: React.FC = () => {
                     )}
                     <Text
                       className={styles.removeBtnSmall}
-                      onClick={() => {
-                        if (confirm('确定删除这个物品吗？')) {
-                          removePublicItem(item.id);
-                        }
+                      onClick={async () => {
+                        const res = await Taro.showModal({ title: '确认删除', content: '确定删除这个物品吗？' });
+                        if (res.confirm) removePublicItem(item.id);
                       }}
                     >
                       删除
@@ -269,10 +268,9 @@ const RulesPage: React.FC = () => {
                         <Text className={styles.ruleDate}>制定于 {formatDate(rule.createdAt)}</Text>
                         <Text
                           className={styles.removeBtnSmall}
-                          onClick={() => {
-                            if (confirm('确定删除这条约定吗？')) {
-                              removeHouseRule(rule.id);
-                            }
+                          onClick={async () => {
+                            const res = await Taro.showModal({ title: '确认删除', content: '确定删除这条约定吗？' });
+                            if (res.confirm) removeHouseRule(rule.id);
                           }}
                         >
                           删除
@@ -361,14 +359,14 @@ const RulesPage: React.FC = () => {
         <View className="formRow">
           <FormField label="购买人" className="formCol">
             <FormInput
-              value={itemForm.purchaser}
+              value={itemForm.purchaser || ''}
               onChange={(v) => setItemForm({ ...itemForm, purchaser: v })}
               placeholder="选填"
             />
           </FormField>
           <FormField label="购买日期" className="formCol">
             <FormInput
-              value={itemForm.purchaseDate}
+              value={itemForm.purchaseDate || ''}
               onChange={(v) => setItemForm({ ...itemForm, purchaseDate: v })}
               placeholder="YYYY-MM-DD"
             />

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, Input } from '@tarojs/components';
+import { View, Text, ScrollView } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { useAppStore } from '@/store';
 import { formatMoney, formatDate, validateShareRatios } from '@/utils';
 import type { RentalProfile, Roommate } from '@/types';
@@ -129,12 +130,16 @@ const ProfilePage: React.FC = () => {
     setEditRoommateVisible(false);
   };
 
-  const handleRemoveRoommate = (id: string) => {
+  const handleRemoveRoommate = async (id: string) => {
     if (roommates.length <= 1) {
-      alert('至少需要保留一位室友');
+      Taro.showToast({ title: '至少需要保留一位室友', icon: 'none' });
       return;
     }
-    if (confirm('确定要删除这位室友吗？')) {
+    const res = await Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这位室友吗？'
+    });
+    if (res.confirm) {
       removeRoommate(id);
     }
   };
@@ -427,7 +432,7 @@ const ProfilePage: React.FC = () => {
 
         <FormField label="联系电话">
           <FormInput
-            value={roommateForm.phone}
+            value={roommateForm.phone || ''}
             onChange={(v) => setRoommateForm({ ...roommateForm, phone: v })}
             placeholder="选填"
           />

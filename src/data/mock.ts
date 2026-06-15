@@ -5,8 +5,7 @@ import type {
   PublicItem,
   HouseRule,
   Issue,
-  CheckoutRecord,
-  RoommateConfirmation
+  CheckoutRecord
 } from '@/types';
 
 export const mockRentalProfile: RentalProfile = {

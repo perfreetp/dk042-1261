@@ -130,7 +130,7 @@ const IssuesPage: React.FC = () => {
 
   const confirmResolve = () => {
     if (!resolutionText.trim()) {
-      alert('请输入解决方案');
+      Taro.showToast({ title: '请输入解决方案', icon: 'none' });
       return;
     }
     if (selectedIssueId) {

@@ -45,3 +45,7 @@ export const getMonthLabel = (dateStr: string): string => {
 export const getCurrentMonthStr = (): string => {
   return dayjs().format('YYYY-MM');
 };
+
+export const getDefaultDueDate = (daysToAdd = 10): string => {
+  return dayjs().add(daysToAdd, 'day').format('YYYY-MM-DD');
+};

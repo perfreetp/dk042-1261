@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from '@tarojs/components';
+import { View, Text, ITouchEvent } from '@tarojs/components';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 
@@ -30,10 +30,8 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   if (!visible) return null;
 
-  const handleMaskClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+  const handleMaskClick = (e: ITouchEvent) => {
+    onClose();
   };
 
   return (

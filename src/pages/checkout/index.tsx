@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { useAppStore } from '@/store';
 import { formatMoney, formatDate } from '@/utils';
 import { DEDUCTION_TYPE_LABEL, type DeductionType } from '@/types';
@@ -48,7 +49,7 @@ const CheckoutPage: React.FC = () => {
     confirmRoommate,
     completeCheckout
   } = useAppStore();
-  const { deductions, totalDeposit, refundAmount, status, checkoutDate, note, confirmations } = checkoutRecord;
+  const { deductions, totalDeposit, status, checkoutDate, note, confirmations } = checkoutRecord;
   const { roommates } = rentalProfile;
 
   const [addDeductionVisible, setAddDeductionVisible] = useState(false);
@@ -158,37 +159,53 @@ const CheckoutPage: React.FC = () => {
     setDisputeModalVisible(false);
   };
 
-  const handleRemoveDeduction = (id: string) => {
-    if (confirm('确定要删除这条扣款记录吗？')) {
+  const handleRemoveDeduction = async (id: string) => {
+    const res = await Taro.showModal({
+      title: '确认删除',
+      content: '确定要删除这条扣款记录吗？'
+    });
+    if (res.confirm) {
       removeDeduction(id);
     }
   };
 
   const handleInitiateConfirm = () => {
     initiateCheckoutConfirm();
-    alert('已发起清算确认，请每位室友点击自己的确认按钮完成确认');
+    Taro.showToast({ title: '已发起确认，请室友点击确认', icon: 'none', duration: 2000 });
     setConfirmModalVisible(false);
   };
 
-  const handleConfirmRoommate = (roommateId: string, roommateName: string) => {
-    if (confirm(`确定 ${roommateName} 要确认清算吗？确认后将无法修改。`)) {
+  const handleConfirmRoommate = async (roommateId: string, roommateName: string) => {
+    const res = await Taro.showModal({
+      title: '确认清算',
+      content: `确定 ${roommateName} 要确认清算吗？确认后将无法修改。`
+    });
+    if (res.confirm) {
       confirmRoommate(roommateId);
       const newConfirmedCount = confirmedCount + 1;
       if (newConfirmedCount === confirmations.length) {
-        setTimeout(() => {
-          if (confirm('所有室友已确认！是否完成清算？')) {
+        setTimeout(async () => {
+          const res2 = await Taro.showModal({
+            title: '全部确认',
+            content: '所有室友已确认！是否完成清算？'
+          });
+          if (res2.confirm) {
             completeCheckout();
-            alert('清算已完成！押金将按约定退还');
+            Taro.showToast({ title: '清算已完成！押金将按约定退还', icon: 'none', duration: 2000 });
           }
-        }, 300);
+        }, 500);
       }
     }
   };
 
-  const handleCompleteCheckout = () => {
-    if (confirm('确定完成清算吗？完成后将无法修改任何内容。')) {
+  const handleCompleteCheckout = async () => {
+    const res = await Taro.showModal({
+      title: '确认完成',
+      content: '确定完成清算吗？完成后将无法修改任何内容。'
+    });
+    if (res.confirm) {
       completeCheckout();
-      alert('清算已完成！押金将按约定退还');
+      Taro.showToast({ title: '清算已完成！押金将按约定退还', icon: 'none', duration: 2000 });
     }
   };
 
@@ -377,7 +394,7 @@ ${note ? `备注：${note}\n` : ''}
         </View>
 
         <View className={styles.confirmCard}>
-          {roommates.map((rm, index) => {
+          {roommates.map((rm) => {
             const confirmation = getConfirmation(rm.id);
             const isConfirmed = confirmation?.confirmed || false;
             return (
@@ -547,7 +564,7 @@ ${note ? `备注：${note}\n` : ''}
         <Text
           className={styles.copyBtn}
           onClick={() => {
-            alert('清单已复制到剪贴板！');
+            Taro.showToast({ title: '清单已复制到剪贴板', icon: 'success' });
             setExportModalVisible(false);
           }}
         >

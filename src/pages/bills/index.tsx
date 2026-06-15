@@ -8,7 +8,8 @@ import {
   isOverdue,
   calculateShareAmount,
   getMonthLabel,
-  getCurrentMonthStr
+  getCurrentMonthStr,
+  getDefaultDueDate
 } from '@/utils';
 import {
   BILL_TYPE_LABEL,
@@ -16,14 +17,12 @@ import {
   type BillType,
   type Bill
 } from '@/types';
-import SectionTitle from '@/components/SectionTitle';
 import EmptyState from '@/components/EmptyState';
 import Tag from '@/components/Tag';
 import Modal from '@/components/Modal';
 import { FormField, FormInput, FormPicker, FormTextarea } from '@/components/FormField';
 import styles from './index.module.scss';
 import classnames from 'classnames';
-import dayjs from 'dayjs';
 
 type TabType = 'all' | 'pending' | 'paid';
 
@@ -32,7 +31,7 @@ const emptyBill: Omit<Bill, 'id' | 'createdAt'> = {
   title: '',
   amount: 0,
   billingPeriod: getCurrentMonthStr(),
-  dueDate: dayjs().add(10, 'day').format('YYYY-MM-DD'),
+  dueDate: getDefaultDueDate(),
   paid: false,
   note: ''
 };
