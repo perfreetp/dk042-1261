@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView, Image } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { useAppStore } from '@/store';
 import { formatDateTime } from '@/utils';
 import {
@@ -56,11 +57,14 @@ const IssuesPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<IssueStatus | 'all'>('all');
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [resolveModalVisible, setResolveModalVisible] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [previewCurrent, setPreviewCurrent] = useState(0);
   const [issueForm, setIssueForm] = useState<Omit<Issue, 'id' | 'reportedAt' | 'attachments'>>(emptyIssue);
   const [issueErrors, setIssueErrors] = useState<Record<string, string>>({});
   const [resolutionText, setResolutionText] = useState('');
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
-  const [mockAttachments, setMockAttachments] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<string[]>([]);
 
   const stats = useMemo(() => ({
     pending: issues.filter((i) => i.status === 'pending').length,
@@ -95,7 +99,7 @@ const IssuesPage: React.FC = () => {
   const openAddIssue = () => {
     setIssueForm({ ...emptyIssue, reportedBy: roommates[0]?.name || '' });
     setIssueErrors({});
-    setMockAttachments([]);
+    setAttachments([]);
     setAddModalVisible(true);
   };
 
@@ -119,7 +123,7 @@ const IssuesPage: React.FC = () => {
 
     addIssue({
       ...issueForm,
-      attachments: mockAttachments
+      attachments: attachments
     });
     setAddModalVisible(false);
   };
@@ -135,15 +139,33 @@ const IssuesPage: React.FC = () => {
     setResolveModalVisible(false);
   };
 
-  const simulateUpload = () => {
-    const mockImages = [
-      '📸 聊天截图',
-      '📷 现场照片',
-      '🎥 视频片段',
-      '📄 文档证据'
-    ];
-    const newAttachment = mockImages[Math.floor(Math.random() * mockImages.length)];
-    setMockAttachments([...mockAttachments, newAttachment]);
+  const handleChooseImage = async () => {
+    try {
+      const res = await Taro.chooseImage({
+        count: 9 - attachments.length,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera']
+      });
+      setAttachments([...attachments, ...res.tempFilePaths]);
+    } catch (e) {
+      console.log('用户取消选择图片');
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newAttachments = [...attachments];
+    newAttachments.splice(index, 1);
+    setAttachments(newAttachments);
+  };
+
+  const handlePreviewImage = (urls: string[], current: number) => {
+    setPreviewUrls(urls);
+    setPreviewCurrent(current);
+    setPreviewVisible(true);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewVisible(false);
   };
 
   return (
@@ -225,6 +247,35 @@ const IssuesPage: React.FC = () => {
                 </View>
               )}
 
+              {issue.attachments.length > 0 && (
+                <View className={styles.attachmentSection}>
+                  <View className={styles.attachmentHeader}>
+                    <Text className={styles.attachmentLabel}>📎 证据附件</Text>
+                    <Text className={styles.attachmentCount}>{issue.attachments.length} 张</Text>
+                  </View>
+                  <View className={styles.thumbnailRow}>
+                    {issue.attachments.slice(0, 4).map((url, idx) => (
+                      <View
+                        key={idx}
+                        className={styles.thumbnailItem}
+                        onClick={() => handlePreviewImage(issue.attachments, idx)}
+                      >
+                        <Image
+                          src={url}
+                          className={styles.thumbnailImage}
+                          mode="aspectFill"
+                        />
+                        {idx === 3 && issue.attachments.length > 4 && (
+                          <View className={styles.thumbnailMore}>
+                            <Text className={styles.thumbnailMoreText}>+{issue.attachments.length - 4}</Text>
+                          </View>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
               <View className={styles.issueMeta}>
                 <View className={styles.metaItem}>
                   <Text className={styles.metaLabel}>记录人：</Text>
@@ -240,14 +291,6 @@ const IssuesPage: React.FC = () => {
                     <Text key={idx} className={styles.personTag}>{p}</Text>
                   ))}
                 </View>
-                {issue.attachments.length > 0 && (
-                  <View className={styles.metaItem}>
-                    <Text className={styles.metaLabel}>📎 证据：</Text>
-                    <Text className={styles.metaValue}>
-                      {issue.attachments.join('、')}
-                    </Text>
-                  </View>
-                )}
               </View>
 
               {issue.status !== 'resolved' && (
@@ -324,47 +367,34 @@ const IssuesPage: React.FC = () => {
         </FormField>
 
         <FormField label="上传证据">
-          <View>
-            <View
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 8,
-                marginBottom: 8
-              }}
-            >
-              {mockAttachments.map((att, idx) => (
-                <Text
-                  key={idx}
-                  style={{
-                    padding: '6px 12px',
-                    backgroundColor: '#F0F2F5',
-                    borderRadius: 8,
-                    fontSize: 24,
-                    color: '#4E5969'
-                  }}
-                >
-                  {att}
-                </Text>
+          <View className={styles.uploadArea}>
+            <View className={styles.uploadRow}>
+              {attachments.map((url, idx) => (
+                <View key={idx} className={styles.uploadItem}>
+                  <Image
+                    src={url}
+                    className={styles.uploadImage}
+                    mode="aspectFill"
+                    onClick={() => handlePreviewImage(attachments, idx)}
+                  />
+                  <View
+                    className={styles.uploadRemove}
+                    onClick={() => handleRemoveImage(idx)}
+                  >
+                    <Text className={styles.uploadRemoveText}>×</Text>
+                  </View>
+                </View>
               ))}
+              {attachments.length < 9 && (
+                <View className={styles.uploadAdd} onClick={handleChooseImage}>
+                  <Text className={styles.uploadAddIcon}>+</Text>
+                  <Text className={styles.uploadAddText}>上传图片</Text>
+                </View>
+              )}
             </View>
-            <Text
-              style={{
-                display: 'inline-block',
-                padding: '12px 24px',
-                border: '1px dashed #20C997',
-                borderRadius: 8,
-                color: '#20C997',
-                fontSize: 24,
-                backgroundColor: 'rgba(32, 201, 151, 0.05)'
-              }}
-              onClick={simulateUpload}
-            >
-              📷 上传截图/照片
-            </Text>
-            {mockAttachments.length > 0 && (
-              <Text style={{ fontSize: 22, color: '#86909C', marginTop: 8 }}>
-                已上传 {mockAttachments.length} 个证据
+            {attachments.length > 0 && (
+              <Text className={styles.uploadHint}>
+                已上传 {attachments.length}/9 张图片
               </Text>
             )}
           </View>
@@ -386,6 +416,29 @@ const IssuesPage: React.FC = () => {
             maxLength={200}
           />
         </FormField>
+      </Modal>
+
+      <Modal
+        visible={previewVisible}
+        title={`图片预览 ${previewCurrent + 1}/${previewUrls.length}`}
+        onClose={handleClosePreview}
+        showFooter={false}
+      >
+        <View className={styles.previewContainer}>
+          <ScrollView scrollX scrollWithAnimation className={styles.previewScroll} showScrollbar={false}>
+            <View className={styles.previewWrapper}>
+              {previewUrls.map((url, idx) => (
+                <View key={idx} className={styles.previewItem}>
+                  <Image
+                    src={url}
+                    className={styles.previewImage}
+                    mode="aspectFit"
+                  />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       </Modal>
     </ScrollView>
   );

@@ -44,9 +44,11 @@ const CheckoutPage: React.FC = () => {
     addDeduction,
     updateDeduction,
     removeDeduction,
-    updateCheckoutRecord
+    initiateCheckoutConfirm,
+    confirmRoommate,
+    completeCheckout
   } = useAppStore();
-  const { deductions, totalDeposit, refundAmount, status, checkoutDate, note } = checkoutRecord;
+  const { deductions, totalDeposit, refundAmount, status, checkoutDate, note, confirmations } = checkoutRecord;
   const { roommates } = rentalProfile;
 
   const [addDeductionVisible, setAddDeductionVisible] = useState(false);
@@ -73,6 +75,20 @@ const CheckoutPage: React.FC = () => {
     () => Math.max(0, totalDeposit - totalDeduction),
     [totalDeposit, totalDeduction]
   );
+
+  const confirmedCount = useMemo(
+    () => confirmations.filter((c) => c.confirmed).length,
+    [confirmations]
+  );
+
+  const allConfirmed = useMemo(
+    () => confirmations.length > 0 && confirmedCount === confirmations.length,
+    [confirmations, confirmedCount]
+  );
+
+  const getConfirmation = (roommateId: string) => {
+    return confirmations.find((c) => c.roommateId === roommateId);
+  };
 
   const openAddDeduction = () => {
     setDeductionForm({ ...emptyDeduction });
@@ -149,17 +165,31 @@ const CheckoutPage: React.FC = () => {
   };
 
   const handleInitiateConfirm = () => {
-    updateCheckoutRecord({ status: 'pending' });
-    alert('已发起清算确认，请通知室友们在各自设备上确认');
+    initiateCheckoutConfirm();
+    alert('已发起清算确认，请每位室友点击自己的确认按钮完成确认');
     setConfirmModalVisible(false);
   };
 
-  const handleConfirmCheckout = () => {
-    updateCheckoutRecord({
-      status: 'completed',
-      confirmedBy: roommates.map((r) => r.name)
-    });
-    alert('清算已完成！押金将按约定退还');
+  const handleConfirmRoommate = (roommateId: string, roommateName: string) => {
+    if (confirm(`确定 ${roommateName} 要确认清算吗？确认后将无法修改。`)) {
+      confirmRoommate(roommateId);
+      const newConfirmedCount = confirmedCount + 1;
+      if (newConfirmedCount === confirmations.length) {
+        setTimeout(() => {
+          if (confirm('所有室友已确认！是否完成清算？')) {
+            completeCheckout();
+            alert('清算已完成！押金将按约定退还');
+          }
+        }, 300);
+      }
+    }
+  };
+
+  const handleCompleteCheckout = () => {
+    if (confirm('确定完成清算吗？完成后将无法修改任何内容。')) {
+      completeCheckout();
+      alert('清算已完成！押金将按约定退还');
+    }
   };
 
   const exportContent = `
@@ -195,7 +225,9 @@ ${roommates.map((rm) => `  ${rm.name}：${formatMoney(calculatedRefund / roommat
 ═══════════════════════════════════
            确认状态
 ═══════════════════════════════════
-${roommates.map((rm) => `  ${rm.name}：${checkoutRecord.confirmedBy.includes(rm.name) ? '✓ 已确认' : '待确认'}`).join('\n')}
+${confirmations.length > 0
+    ? confirmations.map((c) => `  ${c.roommateName}：${c.confirmed ? `✓ 已确认 (${formatDate(c.confirmedAt!)})` : '待确认'}`).join('\n')
+    : roommates.map((rm) => `  ${rm.name}：待确认`).join('\n')}
 
 ${note ? `备注：${note}\n` : ''}
 ═══════════════════════════════════
@@ -337,22 +369,54 @@ ${note ? `备注：${note}\n` : ''}
             <Text className={styles.sectionIcon}>✅</Text>
             <Text className={styles.sectionTitleText}>清算确认</Text>
           </View>
+          {status === 'pending' && (
+            <Text className={styles.confirmProgress}>
+              {confirmedCount}/{confirmations.length} 人已确认
+            </Text>
+          )}
         </View>
 
-        <View className={styles.infoCard}>
-          {roommates.map((rm) => (
-            <View key={rm.id} className={styles.infoRow}>
-              <Text className={styles.infoLabel}>{rm.name}</Text>
-              <Text
-                className={styles.infoValue}
-                style={{
-                  color: checkoutRecord.confirmedBy.includes(rm.name) ? '#00B42A' : '#86909C'
-                }}
-              >
-                {checkoutRecord.confirmedBy.includes(rm.name) ? '✓ 已确认' : '待确认'}
-              </Text>
-            </View>
-          ))}
+        <View className={styles.confirmCard}>
+          {roommates.map((rm, index) => {
+            const confirmation = getConfirmation(rm.id);
+            const isConfirmed = confirmation?.confirmed || false;
+            return (
+              <View key={rm.id} className={styles.confirmItem}>
+                <View className={styles.confirmPerson}>
+                  <View className={styles.confirmAvatar}>
+                    <Text className={styles.confirmAvatarText}>{rm.name.charAt(0)}</Text>
+                  </View>
+                  <View>
+                    <Text className={styles.confirmName}>{rm.name}</Text>
+                    {isConfirmed && confirmation?.confirmedAt && (
+                      <Text className={styles.confirmTime}>
+                        {formatDate(confirmation.confirmedAt)} 确认
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View className={styles.confirmRight}>
+                  {status === 'draft' && (
+                    <Text className={styles.confirmStatus}>未发起</Text>
+                  )}
+                  {status === 'pending' && !isConfirmed && (
+                    <Text
+                      className={classnames(styles.btn, styles.btnPrimary, styles.btnSmall)}
+                      onClick={() => handleConfirmRoommate(rm.id, rm.name)}
+                    >
+                      确认
+                    </Text>
+                  )}
+                  {status === 'pending' && isConfirmed && (
+                    <Text className={styles.confirmedBadge}>✓ 已确认</Text>
+                  )}
+                  {status === 'completed' && (
+                    <Text className={styles.confirmedBadge}>✓ 已确认</Text>
+                  )}
+                </View>
+              </View>
+            );
+          })}
         </View>
       </View>
 
@@ -365,14 +429,14 @@ ${note ? `备注：${note}\n` : ''}
             发起确认
           </Text>
         )}
-        {status === 'pending' && checkoutRecord.confirmedBy.length === roommates.length && (
-          <Text className={classnames(styles.btn, styles.btnSuccess)} onClick={handleConfirmCheckout}>
+        {status === 'pending' && allConfirmed && (
+          <Text className={classnames(styles.btn, styles.btnSuccess)} onClick={handleCompleteCheckout}>
             确认完成
           </Text>
         )}
-        {status === 'pending' && checkoutRecord.confirmedBy.length < roommates.length && (
+        {status === 'pending' && !allConfirmed && (
           <Text className={classnames(styles.btn, styles.btnPrimary)}>
-            等待确认中... ({checkoutRecord.confirmedBy.length}/{roommates.length})
+            等待确认中... ({confirmedCount}/{confirmations.length})
           </Text>
         )}
         {status === 'completed' && (
@@ -457,7 +521,7 @@ ${note ? `备注：${note}\n` : ''}
         confirmText="发起确认"
       >
         <Text style={{ fontSize: 28, color: '#4E5969', lineHeight: 1.6 }}>
-          确认发起清算确认流程后，将通知所有室友核对扣款项目并完成确认。
+          确认发起清算确认流程后，每位室友都需要点击自己的确认按钮完成确认。
           {'\n\n'}
           押金总额：{formatMoney(totalDeposit)}
           {'\n'}
@@ -475,38 +539,13 @@ ${note ? `备注：${note}\n` : ''}
         onClose={() => setExportModalVisible(false)}
         showFooter={false}
       >
-        <View
-          style={{
-            backgroundColor: '#1D2129',
-            padding: 20,
-            borderRadius: 12,
-            maxHeight: 500,
-            overflowY: 'auto'
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 24,
-              color: '#52C41A',
-              fontFamily: 'monospace',
-              whiteSpace: 'pre-wrap',
-              lineHeight: 1.6
-            }}
-          >
+        <View className={styles.exportBox}>
+          <Text className={styles.exportText}>
             {exportContent}
           </Text>
         </View>
         <Text
-          style={{
-            marginTop: 16,
-            padding: '16px',
-            textAlign: 'center',
-            backgroundColor: '#20C997',
-            color: '#fff',
-            borderRadius: 48,
-            fontSize: 28,
-            fontWeight: 600
-          }}
+          className={styles.copyBtn}
           onClick={() => {
             alert('清单已复制到剪贴板！');
             setExportModalVisible(false);

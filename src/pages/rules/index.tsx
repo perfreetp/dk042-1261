@@ -263,9 +263,9 @@ const RulesPage: React.FC = () => {
                     >
                       <Text>{iconData.icon}</Text>
                     </View>
-                    <View style={{ flex: 1 }}>
+                    <View className="flex1">
                       <Text className={styles.ruleContent}>{rule.content}</Text>
-                      <View style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View className="flex spaceBetween itemsCenter">
                         <Text className={styles.ruleDate}>制定于 {formatDate(rule.createdAt)}</Text>
                         <Text
                           className={styles.removeBtnSmall}
@@ -339,8 +339,8 @@ const RulesPage: React.FC = () => {
           />
         </FormField>
 
-        <View style={{ display: 'flex', gap: 16 }}>
-          <FormField label="数量" required error={errors.quantity} style={{ flex: 1 }}>
+        <View className="formRow">
+          <FormField label="数量" required error={errors.quantity} className="formCol">
             <FormInput
               value={String(itemForm.quantity)}
               onChange={(v) => setItemForm({ ...itemForm, quantity: Number(v) })}
@@ -348,7 +348,7 @@ const RulesPage: React.FC = () => {
               type="number"
             />
           </FormField>
-          <FormField label="单价(元)" style={{ flex: 1 }}>
+          <FormField label="单价(元)" className="formCol">
             <FormInput
               value={String(itemForm.price || '')}
               onChange={(v) => setItemForm({ ...itemForm, price: Number(v) })}
@@ -358,15 +358,15 @@ const RulesPage: React.FC = () => {
           </FormField>
         </View>
 
-        <View style={{ display: 'flex', gap: 16 }}>
-          <FormField label="购买人" style={{ flex: 1 }}>
+        <View className="formRow">
+          <FormField label="购买人" className="formCol">
             <FormInput
               value={itemForm.purchaser}
               onChange={(v) => setItemForm({ ...itemForm, purchaser: v })}
               placeholder="选填"
             />
           </FormField>
-          <FormField label="购买日期" style={{ flex: 1 }}>
+          <FormField label="购买日期" className="formCol">
             <FormInput
               value={itemForm.purchaseDate}
               onChange={(v) => setItemForm({ ...itemForm, purchaseDate: v })}

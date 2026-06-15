@@ -8,7 +8,8 @@ import type {
   Issue,
   CheckoutRecord,
   Roommate,
-  DeductionItem
+  DeductionItem,
+  RoommateConfirmation
 } from '@/types';
 import {
   mockRentalProfile,
@@ -61,6 +62,9 @@ interface AppState {
   addDeduction: (deduction: Omit<DeductionItem, 'id'>) => void;
   updateDeduction: (id: string, updates: Partial<DeductionItem>) => void;
   removeDeduction: (id: string) => void;
+  initiateCheckoutConfirm: () => void;
+  confirmRoommate: (roommateId: string) => void;
+  completeCheckout: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -215,6 +219,45 @@ export const useAppStore = create<AppState>((set) => ({
       checkoutRecord: {
         ...state.checkoutRecord,
         deductions: state.checkoutRecord.deductions.filter((d) => d.id !== id)
+      }
+    })),
+
+  initiateCheckoutConfirm: () =>
+    set((state) => {
+      const confirmations: RoommateConfirmation[] = state.rentalProfile.roommates.map((rm) => ({
+        roommateId: rm.id,
+        roommateName: rm.name,
+        confirmed: false
+      }));
+      return {
+        checkoutRecord: {
+          ...state.checkoutRecord,
+          status: 'pending',
+          confirmations
+        }
+      };
+    }),
+
+  confirmRoommate: (roommateId) =>
+    set((state) => {
+      const newConfirmations = state.checkoutRecord.confirmations.map((c) =>
+        c.roommateId === roommateId
+          ? { ...c, confirmed: true, confirmedAt: new Date().toISOString() }
+          : c
+      );
+      return {
+        checkoutRecord: {
+          ...state.checkoutRecord,
+          confirmations: newConfirmations
+        }
+      };
+    }),
+
+  completeCheckout: () =>
+    set((state) => ({
+      checkoutRecord: {
+        ...state.checkoutRecord,
+        status: 'completed'
       }
     }))
 }));

@@ -285,3 +285,25 @@
   color: $color-text-white;
   line-height: 1;
 }
+
+.previewBox {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  background-color: #F7F9FC;
+  border-radius: $radius-md;
+}
+
+.previewTitle {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.previewRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6rpx 0;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}

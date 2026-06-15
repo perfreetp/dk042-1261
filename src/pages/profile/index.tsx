@@ -295,8 +295,8 @@ const ProfilePage: React.FC = () => {
           />
         </FormField>
 
-        <View style={{ display: 'flex', gap: 16 }}>
-          <FormField label="房屋面积(㎡)" required error={profileErrors.totalArea} style={{ flex: 1 }}>
+        <View className="formRow">
+          <FormField label="房屋面积(㎡)" required error={profileErrors.totalArea} className="formCol">
             <FormInput
               value={String(profileForm.totalArea || '')}
               onChange={(v) => setProfileForm({ ...profileForm, totalArea: Number(v) })}
@@ -304,7 +304,7 @@ const ProfilePage: React.FC = () => {
               type="digit"
             />
           </FormField>
-          <FormField label="月租金(元)" required error={profileErrors.totalRent} style={{ flex: 1 }}>
+          <FormField label="月租金(元)" required error={profileErrors.totalRent} className="formCol">
             <FormInput
               value={String(profileForm.totalRent || '')}
               onChange={(v) => setProfileForm({ ...profileForm, totalRent: Number(v) })}
@@ -314,8 +314,8 @@ const ProfilePage: React.FC = () => {
           </FormField>
         </View>
 
-        <View style={{ display: 'flex', gap: 16 }}>
-          <FormField label="押金(元)" required error={profileErrors.deposit}>
+        <View className="formRow">
+          <FormField label="押金(元)" required error={profileErrors.deposit} className="formCol">
             <FormInput
               value={String(profileForm.deposit || '')}
               onChange={(v) => setProfileForm({ ...profileForm, deposit: Number(v) })}
@@ -323,7 +323,7 @@ const ProfilePage: React.FC = () => {
               type="digit"
             />
           </FormField>
-          <FormField label="付款日(每月)" required error={profileErrors.paymentDay}>
+          <FormField label="付款日(每月)" required error={profileErrors.paymentDay} className="formCol">
             <FormInput
               value={String(profileForm.paymentDay || '')}
               onChange={(v) => setProfileForm({ ...profileForm, paymentDay: Number(v) })}
@@ -341,15 +341,15 @@ const ProfilePage: React.FC = () => {
           />
         </FormField>
 
-        <View style={{ display: 'flex', gap: 16 }}>
-          <FormField label="起租日期" required error={profileErrors.leaseStart} style={{ flex: 1 }}>
+        <View className="formRow">
+          <FormField label="起租日期" required error={profileErrors.leaseStart} className="formCol">
             <FormInput
               value={profileForm.leaseStart || ''}
               onChange={(v) => setProfileForm({ ...profileForm, leaseStart: v })}
               placeholder="YYYY-MM-DD"
             />
           </FormField>
-          <FormField label="到期日期" required error={profileErrors.leaseEnd} style={{ flex: 1 }}>
+          <FormField label="到期日期" required error={profileErrors.leaseEnd} className="formCol">
             <FormInput
               value={profileForm.leaseEnd || ''}
               onChange={(v) => setProfileForm({ ...profileForm, leaseEnd: v })}
@@ -398,8 +398,8 @@ const ProfilePage: React.FC = () => {
           />
         </FormField>
 
-        <View style={{ display: 'flex', gap: 16 }}>
-          <FormField label="房间面积(㎡)" required error={roommateErrors.roomArea} style={{ flex: 1 }}>
+        <View className="formRow">
+          <FormField label="房间面积(㎡)" required error={roommateErrors.roomArea} className="formCol">
             <FormInput
               value={String(roommateForm.roomArea)}
               onChange={(v) => setRoommateForm({ ...roommateForm, roomArea: Number(v) })}
@@ -407,7 +407,7 @@ const ProfilePage: React.FC = () => {
               type="digit"
             />
           </FormField>
-          <FormField label="分摊比例(%)" required error={roommateErrors.shareRatio} style={{ flex: 1 }}>
+          <FormField label="分摊比例(%)" required error={roommateErrors.shareRatio} className="formCol">
             <FormInput
               value={String(Math.round(roommateForm.shareRatio * 100))}
               onChange={(v) => setRoommateForm({ ...roommateForm, shareRatio: Number(v) / 100 })}

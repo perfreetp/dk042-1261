@@ -65,10 +65,12 @@ export interface PublicItem {
   note?: string;
 }
 
+export type HouseRuleCategory = 'hygiene' | 'noise' | 'visitor' | 'pet' | 'smoking' | 'other';
+
 export interface HouseRule {
   id: string;
   content: string;
-  category: 'hygiene' | 'noise' | 'visitor' | 'pet' | 'smoking' | 'other';
+  category: HouseRuleCategory;
   createdAt: string;
 }
 
@@ -102,13 +104,20 @@ export interface DeductionItem {
   disputeReason?: string;
 }
 
+export interface RoommateConfirmation {
+  roommateId: string;
+  roommateName: string;
+  confirmed: boolean;
+  confirmedAt?: string;
+}
+
 export interface CheckoutRecord {
   id: string;
   checkoutDate: string;
   totalDeposit: number;
   deductions: DeductionItem[];
   refundAmount: number;
-  confirmedBy: string[];
+  confirmations: RoommateConfirmation[];
   note?: string;
   status: 'draft' | 'pending' | 'completed' | 'disputed';
 }

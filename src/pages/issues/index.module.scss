@@ -266,3 +266,184 @@
   color: $color-text-white;
   line-height: 1;
 }
+
+// 附件缩略图
+.attachmentSection {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+}
+
+.attachmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.attachmentLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.attachmentCount {
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.thumbnailRow {
+  display: flex;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.thumbnailItem {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-sm;
+  overflow: hidden;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+}
+
+.thumbnailMore {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnailMoreText {
+  font-size: $font-size-lg;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+// 上传区域
+.uploadArea {
+  width: 100%;
+}
+
+.uploadRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.uploadItem {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.uploadImage {
+  width: 100%;
+  height: 100%;
+}
+
+.uploadRemove {
+  position: absolute;
+  top: 4rpx;
+  right: 4rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-round;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.uploadRemoveText {
+  font-size: 28rpx;
+  color: $color-text-white;
+  line-height: 1;
+}
+
+.uploadAdd {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-sm;
+  border: 2rpx dashed $color-primary;
+  background-color: rgba(32, 201, 151, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.uploadAddIcon {
+  font-size: 48rpx;
+  color: $color-primary;
+  line-height: 1;
+  margin-bottom: 4rpx;
+}
+
+.uploadAddText {
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.uploadHint {
+  font-size: $font-size-xs;
+  color: $color-text-placeholder;
+  margin-top: $spacing-sm;
+}
+
+// 图片预览
+.previewContainer {
+  width: 100%;
+  height: 600rpx;
+  background-color: #000;
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.previewScroll {
+  width: 100%;
+  height: 100%;
+  white-space: nowrap;
+}
+
+.previewWrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.previewItem {
+  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+}

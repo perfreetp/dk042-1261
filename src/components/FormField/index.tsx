@@ -8,12 +8,13 @@ interface FormFieldProps {
   required?: boolean;
   error?: string;
   hint?: string;
+  className?: string;
   children?: React.ReactNode;
 }
 
-export const FormField: React.FC<FormFieldProps> = ({ label, required, error, hint, children }) => {
+export const FormField: React.FC<FormFieldProps> = ({ label, required, error, hint, className, children }) => {
   return (
-    <View className={styles.field}>
+    <View className={classnames(styles.field, className)}>
       {label && (
         <Text className={styles.label}>
           {required && <Text className={styles.required}>*</Text>}

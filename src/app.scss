@@ -10,3 +10,49 @@ page {
   color: $color-text-primary;
   background-color: $color-bg-page;
 }
+
+// 通用布局类
+.flex {
+  display: flex;
+}
+
+.flex1 {
+  flex: 1;
+}
+
+.spaceBetween {
+  justify-content: space-between;
+}
+
+.itemsCenter {
+  align-items: center;
+}
+
+// 两列表单布局
+.formRow {
+  display: flex;
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.formCol {
+  flex: 1;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+// 间距工具类
+.mt8 { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mt24 { margin-top: 24px; }
+
+.mb8 { margin-bottom: 8px; }
+.mb12 { margin-bottom: 12px; }
+.mb16 { margin-bottom: 16px; }
+.mb24 { margin-bottom: 24px; }
+
+.p8 { padding: 8px; }
+.p12 { padding: 12px; }
+.p16 { padding: 16px; }
+.p24 { padding: 24px; }

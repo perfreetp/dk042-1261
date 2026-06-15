@@ -277,15 +277,15 @@ const BillsPage: React.FC = () => {
           />
         </FormField>
 
-        <View style={{ display: 'flex', gap: 16 }}>
-          <FormField label="账期月份" required error={billErrors.billingPeriod} style={{ flex: 1 }}>
+        <View className="formRow">
+          <FormField label="账期月份" required error={billErrors.billingPeriod} className="formCol">
             <FormInput
               value={billForm.billingPeriod}
               onChange={(v) => setBillForm({ ...billForm, billingPeriod: v })}
               placeholder="YYYY-MM"
             />
           </FormField>
-          <FormField label="到期日期" required error={billErrors.dueDate} style={{ flex: 1 }}>
+          <FormField label="到期日期" required error={billErrors.dueDate} className="formCol">
             <FormInput
               value={billForm.dueDate}
               onChange={(v) => setBillForm({ ...billForm, dueDate: v })}
@@ -303,21 +303,12 @@ const BillsPage: React.FC = () => {
           />
         </FormField>
 
-        <View style={{ marginTop: 16, padding: 16, backgroundColor: '#F7F9FC', borderRadius: 12 }}>
-          <Text style={{ fontSize: 24, color: '#4E5969', marginBottom: 8 }}>
+        <View className={styles.previewBox}>
+          <Text className={styles.previewTitle}>
             📊 分摊预览（按室友比例自动计算）
           </Text>
           {roommates.map((rm) => (
-            <View
-              key={rm.id}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '6px 0',
-                fontSize: 24,
-                color: '#4E5969'
-              }}
-            >
+            <View key={rm.id} className={styles.previewRow}>
               <Text>{rm.name} ({(rm.shareRatio * 100).toFixed(0)}%)</Text>
               <Text>
                 {formatMoney(calculateShareAmount(billForm.amount || 0, rm.shareRatio))}

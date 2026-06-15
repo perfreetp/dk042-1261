@@ -5,7 +5,8 @@ import type {
   PublicItem,
   HouseRule,
   Issue,
-  CheckoutRecord
+  CheckoutRecord,
+  RoommateConfirmation
 } from '@/types';
 
 export const mockRentalProfile: RentalProfile = {
@@ -309,7 +310,7 @@ export const mockCheckoutRecord: CheckoutRecord = {
     }
   ],
   refundAmount: 12800,
-  confirmedBy: [],
+  confirmations: [],
   status: 'draft',
   note: '预计2月底退租，提前核对扣款项目'
 };
